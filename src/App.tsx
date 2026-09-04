@@ -6,6 +6,9 @@ import { Login } from './features/auth/Login';
 import { SignUp } from './features/auth/SignUp';
 import { QuizSearch } from './features/quiz-search/QuizSearch';
 import { MyQuizzes } from './features/my-quizzes/MyQuizzes';
+import { QuizForm } from './features/quiz-builder/QuizForm';
+import { PecaForm } from './features/quiz-builder/PecaForm';
+import { HotspotEditor } from './features/quiz-builder/HotspotEditor';
 
 function App() {
   return (
@@ -28,6 +31,38 @@ function App() {
             element={
               <ProtectedRoute>
                 <MyQuizzes />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/quiz/novo"
+            element={
+              <ProtectedRoute>
+                <QuizForm />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/quiz/:id/editar"
+            element={
+              <ProtectedRoute>
+                <QuizForm />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/quiz/:quizId/peca/nova"
+            element={
+              <ProtectedRoute>
+                <PecaForm />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/vista/:vistaId/hotspots"
+            element={
+              <ProtectedRoute>
+                <HotspotEditor />
               </ProtectedRoute>
             }
           />
