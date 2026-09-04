@@ -75,8 +75,15 @@ create table hotspot (
     id              uuid primary key default gen_random_uuid(),
     imagem_id       uuid not null references imagem_vista(id) on delete cascade,
     estrutura_id    uuid not null references estrutura_anatomica(id),
-    coord_x         numeric(6,3) not null,
-    coord_y         numeric(6,3) not null
+    tipo            varchar(10) not null default 'ponto' check (tipo in ('ponto', 'regiao')),
+    coord_x         numeric(6,3) not null,   -- ponto: posição da marcação; região: canto superior esquerdo
+    coord_y         numeric(6,3) not null,
+    largura         numeric(6,3),            -- só preenchido quando tipo = 'regiao' (elipse inscrita no retângulo x,y,largura,altura)
+    altura          numeric(6,3),
+    constraint hotspot_regiao_tem_tamanho check (
+        (tipo = 'ponto' and largura is null and altura is null) or
+        (tipo = 'regiao' and largura is not null and altura is not null)
+    )
 );
 
 create table pergunta (
