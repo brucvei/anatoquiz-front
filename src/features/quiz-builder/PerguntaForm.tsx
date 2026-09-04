@@ -52,9 +52,12 @@ export function PerguntaForm({ hotspotId, onClose }: PerguntaFormProps) {
         setEnunciado(pergunta.enunciado);
         const alts = await listAlternativas(pergunta.id);
         if (!ativo) return;
-        if (alts.length === 4) {
-          setAlternativas(alts.map((a) => ({ id: a.id, texto: a.texto })));
-          setCorreta(alts.findIndex((a) => a.correta));
+        if (alts.length > 0) {
+          const carregadas: AlternativaCampo[] = alts.map((a) => ({ id: a.id, texto: a.texto }));
+          while (carregadas.length < 4) carregadas.push({ id: null, texto: '' });
+          setAlternativas(carregadas);
+          const idxCorreta = alts.findIndex((a) => a.correta);
+          setCorreta(idxCorreta === -1 ? 0 : idxCorreta);
         }
       }
       setCarregando(false);
