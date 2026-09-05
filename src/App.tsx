@@ -1,18 +1,22 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { AuthProvider } from './hooks/useAuth';
+import { I18nProvider } from './i18n';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { Header } from './components/Header';
 import { Login } from './features/auth/Login';
 import { SignUp } from './features/auth/SignUp';
 import { QuizSearch } from './features/quiz-search/QuizSearch';
 import { MyQuizzes } from './features/my-quizzes/MyQuizzes';
-import { QuizForm } from './features/quiz-builder/QuizForm';
-import { PecaForm } from './features/quiz-builder/PecaForm';
-import { HotspotEditor } from './features/quiz-builder/HotspotEditor';
+import { History } from './features/my-quizzes/History';
+import { QuizBuilder } from './features/quiz-builder/QuizBuilder';
+import { QuizPlay } from './features/quiz-play/QuizPlay';
+import { QuizResult } from './features/quiz-result/QuizResult';
+import { Ranking } from './features/ranking/Ranking';
 
 function App() {
   return (
-    <AuthProvider>
+    <I18nProvider>
+      <AuthProvider>
       <BrowserRouter>
         <Header />
         <Routes>
@@ -38,7 +42,7 @@ function App() {
             path="/quiz/novo"
             element={
               <ProtectedRoute>
-                <QuizForm />
+                <QuizBuilder />
               </ProtectedRoute>
             }
           />
@@ -46,30 +50,55 @@ function App() {
             path="/quiz/:id/editar"
             element={
               <ProtectedRoute>
-                <QuizForm />
+                <QuizBuilder />
               </ProtectedRoute>
             }
           />
           <Route
-            path="/quiz/:quizId/peca/nova"
+            path="/quiz/:id/jogar"
             element={
               <ProtectedRoute>
-                <PecaForm />
+                <QuizPlay />
               </ProtectedRoute>
             }
           />
           <Route
-            path="/vista/:vistaId/hotspots"
+            path="/quiz/:id/resultado"
             element={
               <ProtectedRoute>
-                <HotspotEditor />
+                <QuizResult />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/ranking"
+            element={
+              <ProtectedRoute>
+                <Ranking />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/quiz/:id/ranking"
+            element={
+              <ProtectedRoute>
+                <Ranking />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/historico"
+            element={
+              <ProtectedRoute>
+                <History />
               </ProtectedRoute>
             }
           />
           <Route path="/" element={<Navigate to="/buscar" replace />} />
         </Routes>
       </BrowserRouter>
-    </AuthProvider>
+      </AuthProvider>
+    </I18nProvider>
   );
 }
 
