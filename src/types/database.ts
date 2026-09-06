@@ -174,6 +174,7 @@ export type TentativaResposta = {
   resposta_texto: string | null;
   acertou: boolean;
   pontos: number;
+  sessao_id: string | null;
   respondido_em: string;
 }
 export type TentativaRespostaInsert = {
@@ -185,6 +186,7 @@ export type TentativaRespostaInsert = {
   resposta_texto?: string | null;
   acertou: boolean;
   pontos?: number;
+  sessao_id?: string | null;
 }
 export type TentativaRespostaUpdate = {
   acertou?: boolean;
@@ -236,6 +238,7 @@ export type Database = {
           p_modo: Modo;
           p_alternativa_id?: string | null;
           p_resposta_texto?: string | null;
+          p_sessao_id?: string | null;
         };
         Returns: CorrigirRespostaResult[];
       };

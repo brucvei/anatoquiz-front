@@ -6,7 +6,8 @@ create or replace function public.corrigir_resposta(
     p_pergunta_id uuid,
     p_modo varchar,               -- 'multipla' ou 'livre'
     p_alternativa_id uuid default null,
-    p_resposta_texto varchar default null
+    p_resposta_texto varchar default null,
+    p_sessao_id uuid default null -- identifica a partida (1 valor gerado no client por jogada)
 )
 returns table (
     acertou boolean,
@@ -50,14 +51,14 @@ begin
         v_pontos := case when v_acertou then 10 else 0 end;
 
     elsif p_modo = 'livre' then
-        -- fuzzy match simples: compara texto normalizado (minúsculo, sem espaços extras)
+        -- fuzzy match simples via pg_trgm: tolera erro de digitação/acento (ex: "trocanter" vs "trocânter maior")
         v_acertou := exists (
             select 1
               from alternativa a
              where a.pergunta_id = p_pergunta_id
                and a.correta = true
-               and lower(trim(a.texto)) = lower(trim(coalesce(p_resposta_texto, '')))
-        ) or lower(trim(v_estrutura_nome)) = lower(trim(coalesce(p_resposta_texto, '')));
+               and similarity(lower(trim(a.texto)), lower(trim(coalesce(p_resposta_texto, '')))) >= 0.35
+        ) or similarity(lower(trim(v_estrutura_nome)), lower(trim(coalesce(p_resposta_texto, '')))) >= 0.35;
 
         v_pontos := case when v_acertou then 20 else 0 end;  -- dobro no modo livre
     else
@@ -66,10 +67,10 @@ begin
 
     insert into tentativa_resposta (
         usuario_id, quiz_id, pergunta_id, alternativa_id,
-        modo, resposta_texto, acertou, pontos
+        modo, resposta_texto, acertou, pontos, sessao_id
     ) values (
         v_usuario_id, v_quiz_id, p_pergunta_id, p_alternativa_id,
-        p_modo, p_resposta_texto, v_acertou, v_pontos
+        p_modo, p_resposta_texto, v_acertou, v_pontos, p_sessao_id
     );
 
     insert into pontuacao_quiz (usuario_id, quiz_id, pontos_total)

@@ -5,6 +5,7 @@
 -- =========================================================
 
 create extension if not exists "pgcrypto";
+create extension if not exists "pg_trgm";  -- fuzzy match simples no modo livre (RPC corrigir_resposta)
 
 -- =========================================================
 -- 1. PERFIL (estende auth.users do Supabase)
@@ -112,6 +113,7 @@ create table tentativa_resposta (
     resposta_texto      varchar(200),
     acertou             boolean not null,
     pontos              integer not null default 0,
+    sessao_id           uuid,   -- agrupa as respostas de uma mesma partida (gerado no client, 1 por jogada)
     respondido_em       timestamp not null default now()
 );
 
@@ -126,10 +128,12 @@ create table pontuacao_quiz (
 );
 
 create index idx_peca_quiz on peca_anatomica(quiz_id);
+create index idx_imagem_peca on imagem_vista(peca_id);
 create index idx_hotspot_imagem on hotspot(imagem_id);
 create index idx_alternativa_pergunta on alternativa(pergunta_id);
 create index idx_tentativa_usuario on tentativa_resposta(usuario_id);
 create index idx_tentativa_quiz on tentativa_resposta(quiz_id);
+create index idx_tentativa_sessao on tentativa_resposta(sessao_id);
 create index idx_quiz_titulo on quiz using gin (to_tsvector('portuguese', titulo || ' ' || coalesce(descricao, ''))); -- busca por texto
 
 -- =========================================================
@@ -147,83 +151,83 @@ alter table alternativa enable row level security;
 alter table tentativa_resposta enable row level security;
 alter table pontuacao_quiz enable row level security;
 
+-- Funções auxiliares (security definer) pra checar dono/visibilidade do quiz sem
+-- disparar RLS aninhada em cada tabela do caminho (peca -> imagem -> hotspot -> pergunta
+-- -> alternativa). Cada uma faz UM lookup indexado; evita o "RLS dentro de RLS" que
+-- causa "canceling statement due to statement timeout" em cadeias profundas.
+create function public.quiz_dono(p_quiz_id uuid)
+returns boolean language sql security definer stable set search_path = public as $$
+  select exists (select 1 from quiz where id = p_quiz_id and autor_id = (select auth.uid()));
+$$;
+
+create function public.quiz_visivel(p_quiz_id uuid)
+returns boolean language sql security definer stable set search_path = public as $$
+  select exists (select 1 from quiz where id = p_quiz_id and (publico = true or autor_id = (select auth.uid())));
+$$;
+
+create function public.peca_quiz_id(p_peca_id uuid)
+returns uuid language sql security definer stable set search_path = public as $$
+  select quiz_id from peca_anatomica where id = p_peca_id;
+$$;
+
+create function public.imagem_quiz_id(p_imagem_id uuid)
+returns uuid language sql security definer stable set search_path = public as $$
+  select public.peca_quiz_id(peca_id) from imagem_vista where id = p_imagem_id;
+$$;
+
+create function public.hotspot_quiz_id(p_hotspot_id uuid)
+returns uuid language sql security definer stable set search_path = public as $$
+  select public.imagem_quiz_id(imagem_id) from hotspot where id = p_hotspot_id;
+$$;
+
+create function public.pergunta_quiz_id(p_pergunta_id uuid)
+returns uuid language sql security definer stable set search_path = public as $$
+  select public.hotspot_quiz_id(hotspot_id) from pergunta where id = p_pergunta_id;
+$$;
+
 -- PERFIL
-create policy "perfil_select_all" on perfil for select using (auth.role() = 'authenticated');
-create policy "perfil_update_own" on perfil for update using (auth.uid() = id);
+create policy "perfil_select_all" on perfil for select using ((select auth.role()) = 'authenticated');
+create policy "perfil_update_own" on perfil for update using ((select auth.uid()) = id);
 
 -- QUIZ: todo mundo autenticado vê quizzes públicos; autor gerencia o próprio
-create policy "quiz_select_public" on quiz for select using (publico = true or autor_id = auth.uid());
-create policy "quiz_insert_own" on quiz for insert with check (autor_id = auth.uid());
-create policy "quiz_update_own" on quiz for update using (autor_id = auth.uid());
-create policy "quiz_delete_own" on quiz for delete using (autor_id = auth.uid());
+create policy "quiz_select_public" on quiz for select using (publico = true or autor_id = (select auth.uid()));
+create policy "quiz_insert_own" on quiz for insert with check (autor_id = (select auth.uid()));
+create policy "quiz_update_own" on quiz for update using (autor_id = (select auth.uid()));
+create policy "quiz_delete_own" on quiz for delete using (autor_id = (select auth.uid()));
 
 -- SISTEMA_ANATOMICO: lista fixa de referência, leitura livre, escrita por qualquer autenticado
-create policy "sistema_select_all" on sistema_anatomico for select using (auth.role() = 'authenticated');
-create policy "sistema_insert_auth" on sistema_anatomico for insert with check (auth.role() = 'authenticated');
+create policy "sistema_select_all" on sistema_anatomico for select using ((select auth.role()) = 'authenticated');
+create policy "sistema_insert_auth" on sistema_anatomico for insert with check ((select auth.role()) = 'authenticated');
 
 -- ESTRUTURA_ANATOMICA: idem
-create policy "estrutura_select_all" on estrutura_anatomica for select using (auth.role() = 'authenticated');
-create policy "estrutura_insert_auth" on estrutura_anatomica for insert with check (auth.role() = 'authenticated');
+create policy "estrutura_select_all" on estrutura_anatomica for select using ((select auth.role()) = 'authenticated');
+create policy "estrutura_insert_auth" on estrutura_anatomica for insert with check ((select auth.role()) = 'authenticated');
 
--- PECA_ANATOMICA / IMAGEM_VISTA / HOTSPOT / PERGUNTA: seguem a visibilidade do quiz pai;
--- só o autor do quiz edita. Usa subquery para checar o dono via quiz_id.
-create policy "peca_select_via_quiz" on peca_anatomica for select using (
-    exists (select 1 from quiz q where q.id = quiz_id and (q.publico = true or q.autor_id = auth.uid()))
-);
-create policy "peca_write_own_quiz" on peca_anatomica for all using (
-    exists (select 1 from quiz q where q.id = quiz_id and q.autor_id = auth.uid())
-);
+-- PECA_ANATOMICA / IMAGEM_VISTA / HOTSPOT / PERGUNTA / ALTERNATIVA: seguem a visibilidade
+-- do quiz pai; só o autor do quiz edita. Usa as funções acima em vez de EXISTS+JOIN direto.
+create policy "peca_select_via_quiz" on peca_anatomica for select using (quiz_visivel(quiz_id));
+create policy "peca_write_own_quiz" on peca_anatomica for all using (quiz_dono(quiz_id));
 
-create policy "imagem_select_via_quiz" on imagem_vista for select using (
-    exists (select 1 from peca_anatomica p join quiz q on q.id = p.quiz_id
-            where p.id = peca_id and (q.publico = true or q.autor_id = auth.uid()))
-);
-create policy "imagem_write_own_quiz" on imagem_vista for all using (
-    exists (select 1 from peca_anatomica p join quiz q on q.id = p.quiz_id
-            where p.id = peca_id and q.autor_id = auth.uid())
-);
+create policy "imagem_select_via_quiz" on imagem_vista for select using (quiz_visivel(peca_quiz_id(peca_id)));
+create policy "imagem_write_own_quiz" on imagem_vista for all using (quiz_dono(peca_quiz_id(peca_id)));
 
-create policy "hotspot_select_via_quiz" on hotspot for select using (
-    exists (select 1 from imagem_vista i join peca_anatomica p on p.id = i.peca_id join quiz q on q.id = p.quiz_id
-            where i.id = imagem_id and (q.publico = true or q.autor_id = auth.uid()))
-);
-create policy "hotspot_write_own_quiz" on hotspot for all using (
-    exists (select 1 from imagem_vista i join peca_anatomica p on p.id = i.peca_id join quiz q on q.id = p.quiz_id
-            where i.id = imagem_id and q.autor_id = auth.uid())
-);
+create policy "hotspot_select_via_quiz" on hotspot for select using (quiz_visivel(imagem_quiz_id(imagem_id)));
+create policy "hotspot_write_own_quiz" on hotspot for all using (quiz_dono(imagem_quiz_id(imagem_id)));
 
-create policy "pergunta_select_via_quiz" on pergunta for select using (
-    exists (select 1 from hotspot h join imagem_vista i on i.id = h.imagem_id
-            join peca_anatomica p on p.id = i.peca_id join quiz q on q.id = p.quiz_id
-            where h.id = hotspot_id and (q.publico = true or q.autor_id = auth.uid()))
-);
-create policy "pergunta_write_own_quiz" on pergunta for all using (
-    exists (select 1 from hotspot h join imagem_vista i on i.id = h.imagem_id
-            join peca_anatomica p on p.id = i.peca_id join quiz q on q.id = p.quiz_id
-            where h.id = hotspot_id and q.autor_id = auth.uid())
-);
+create policy "pergunta_select_via_quiz" on pergunta for select using (quiz_visivel(hotspot_quiz_id(hotspot_id)));
+create policy "pergunta_write_own_quiz" on pergunta for all using (quiz_dono(hotspot_quiz_id(hotspot_id)));
 
 -- ALTERNATIVA: leitura liberada (correção de fato deve ir por RPC, não client direto)
-create policy "alternativa_select_via_quiz" on alternativa for select using (
-    exists (select 1 from pergunta pg join hotspot h on h.id = pg.hotspot_id
-            join imagem_vista i on i.id = h.imagem_id join peca_anatomica p on p.id = i.peca_id
-            join quiz q on q.id = p.quiz_id
-            where pg.id = pergunta_id and (q.publico = true or q.autor_id = auth.uid()))
-);
-create policy "alternativa_write_own_quiz" on alternativa for all using (
-    exists (select 1 from pergunta pg join hotspot h on h.id = pg.hotspot_id
-            join imagem_vista i on i.id = h.imagem_id join peca_anatomica p on p.id = i.peca_id
-            join quiz q on q.id = p.quiz_id
-            where pg.id = pergunta_id and q.autor_id = auth.uid())
-);
+create policy "alternativa_select_via_quiz" on alternativa for select using (quiz_visivel(pergunta_quiz_id(pergunta_id)));
+create policy "alternativa_write_own_quiz" on alternativa for all using (quiz_dono(pergunta_quiz_id(pergunta_id)));
 
 -- TENTATIVA_RESPOSTA e PONTUACAO_QUIZ: cada um só mexe no próprio histórico
-create policy "tentativa_select_own" on tentativa_resposta for select using (auth.uid() = usuario_id);
-create policy "tentativa_insert_own" on tentativa_resposta for insert with check (auth.uid() = usuario_id);
+create policy "tentativa_select_own" on tentativa_resposta for select using ((select auth.uid()) = usuario_id);
+create policy "tentativa_insert_own" on tentativa_resposta for insert with check ((select auth.uid()) = usuario_id);
 
-create policy "pontuacao_select_own" on pontuacao_quiz for select using (auth.uid() = usuario_id);
-create policy "pontuacao_insert_own" on pontuacao_quiz for insert with check (auth.uid() = usuario_id);
-create policy "pontuacao_update_own" on pontuacao_quiz for update using (auth.uid() = usuario_id);
+create policy "pontuacao_select_all" on pontuacao_quiz for select using ((select auth.role()) = 'authenticated');
+create policy "pontuacao_insert_own" on pontuacao_quiz for insert with check ((select auth.uid()) = usuario_id);
+create policy "pontuacao_update_own" on pontuacao_quiz for update using ((select auth.uid()) = usuario_id);
 
 -- =========================================================
 -- 5. FUNCTIONS (RPC)
