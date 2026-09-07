@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useI18n } from '../../i18n';
 import {
   createAlternativa,
   createPergunta,
@@ -22,17 +23,13 @@ function alternativasVazias(): AlternativaCampo[] {
   ];
 }
 
-function erroMensagem(err: unknown): string {
-  if (err && typeof err === 'object' && 'message' in err) return String((err as { message: unknown }).message);
-  return 'Erro ao salvar';
-}
-
 interface PerguntaFormProps {
   hotspotId: string;
   onClose: () => void;
 }
 
 export function PerguntaForm({ hotspotId, onClose }: PerguntaFormProps) {
+  const { t } = useI18n();
   const [perguntaId, setPerguntaId] = useState<string | null>(null);
   const [enunciado, setEnunciado] = useState('');
   const [alternativas, setAlternativas] = useState<AlternativaCampo[]>(alternativasVazias());
@@ -41,6 +38,11 @@ export function PerguntaForm({ hotspotId, onClose }: PerguntaFormProps) {
   const [salvando, setSalvando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
   const [salvo, setSalvo] = useState(false);
+
+  function erroMensagem(err: unknown): string {
+    if (err && typeof err === 'object' && 'message' in err) return String((err as { message: unknown }).message);
+    return t('perguntaForm.erroSalvar');
+  }
 
   useEffect(() => {
     let ativo = true;
@@ -70,6 +72,7 @@ export function PerguntaForm({ hotspotId, onClose }: PerguntaFormProps) {
 
   function handleAlternativaChange(index: number, texto: string) {
     setAlternativas((prev) => prev.map((a, i) => (i === index ? { ...a, texto } : a)));
+    setSalvo(false);
   }
 
   async function handleSalvar() {
@@ -106,36 +109,56 @@ export function PerguntaForm({ hotspotId, onClose }: PerguntaFormProps) {
   }
 
   if (carregando) {
-    return <p className="text-sm text-center">Carregando...</p>;
+    return <p className="text-sm text-center">{t('comum.carregando')}</p>;
   }
 
   return (
     <div className="flex flex-col gap-3">
-      <h2 className="text-lg font-heading">{perguntaId ? 'Editar pergunta' : 'Nova pergunta'}</h2>
+      <span className="text-[11px] uppercase tracking-wide font-bold text-accent-700/60">
+        {t('perguntaForm.kicker')}
+      </span>
+      <h2 className="text-lg font-heading -mt-2">{perguntaId ? t('perguntaForm.editar') : t('perguntaForm.nova')}</h2>
 
       <textarea
-        placeholder="Enunciado da pergunta"
+        placeholder={t('perguntaForm.enunciado')}
         value={enunciado}
-        onChange={(e) => setEnunciado(e.target.value)}
+        onChange={(e) => {
+          setEnunciado(e.target.value);
+          setSalvo(false);
+        }}
         className="bg-bg border border-divider rounded-md px-4 py-2 text-sm min-h-16"
       />
 
       {alternativas.map((alt, i) => (
         <label key={i} className="flex items-center gap-2">
-          <input type="radio" name="correta" checked={correta === i} onChange={() => setCorreta(i)} />
+          <input
+            type="radio"
+            name="correta"
+            checked={correta === i}
+            onChange={() => {
+              setCorreta(i);
+              setSalvo(false);
+            }}
+          />
           <input
             type="text"
-            placeholder={`Alternativa ${i + 1}`}
+            placeholder={t('perguntaForm.alternativa', { n: i + 1 })}
             value={alt.texto}
             onChange={(e) => handleAlternativaChange(i, e.target.value)}
             className="flex-1 bg-bg border border-divider rounded-full px-4 py-2 text-sm"
           />
         </label>
       ))}
-      <p className="text-xs text-accent-700/70">Marque o círculo da alternativa correta.</p>
+      <p className="text-xs text-accent-700/70">{t('perguntaForm.marqueCorreta')}</p>
 
-      {erro && <p className="text-accent-700 text-sm">{erro}</p>}
-      {salvo && !erro && <p className="text-accent-2-800 text-sm">Salvo.</p>}
+      {erro && (
+        <div className="p-3 rounded-md text-sm border-2 bg-accent-200 border-accent-700 text-accent-900">{erro}</div>
+      )}
+      {salvo && !erro && (
+        <div className="p-3 rounded-md text-sm border-2 bg-accent-2-200 border-accent-2-600 text-accent-2-900 flex items-center gap-2">
+          <span className="font-heading text-base">✓</span> {t('perguntaForm.salvo')}
+        </div>
+      )}
 
       <div className="flex gap-2">
         <button
@@ -144,10 +167,10 @@ export function PerguntaForm({ hotspotId, onClose }: PerguntaFormProps) {
           disabled={salvando}
           className="bg-accent text-bg font-heading rounded-full px-4 py-2 text-sm disabled:opacity-50"
         >
-          {salvando ? 'Salvando...' : 'Salvar pergunta'}
+          {salvando ? t('perguntaForm.salvando') : t('perguntaForm.salvarPergunta')}
         </button>
         <button type="button" onClick={onClose} className="text-sm text-accent-700 underline">
-          Fechar
+          {t('comum.fechar')}
         </button>
       </div>
     </div>

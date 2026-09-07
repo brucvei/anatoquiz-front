@@ -1,8 +1,7 @@
-import { useEffect, useRef, useState, type MouseEvent } from 'react';
-import { useParams } from 'react-router-dom';
-import type { EstruturaAnatomica, Hotspot, ImagemVista, TipoHotspot } from '../../types/database';
-import { createHotspot, findOrCreateEstrutura, getImagemUrl, getVista, listEstruturas, listHotspots } from './api';
-import { PerguntaForm } from './PerguntaForm';
+import { Fragment, useEffect, useRef, useState, type MouseEvent, type ReactNode } from 'react';
+import type { EstruturaAnatomica, Hotspot, TipoHotspot } from '../../types/database';
+import { useI18n } from '../../i18n';
+import { createHotspot, deleteHotspot, findOrCreateEstrutura, getImagemUrl, listEstruturas, listHotspots } from './api';
 
 interface Pendente {
   tipo: TipoHotspot;
@@ -12,16 +11,16 @@ interface Pendente {
   altura?: number;
 }
 
-function erroMensagem(err: unknown): string {
-  if (err && typeof err === 'object' && 'message' in err) return String((err as { message: unknown }).message);
-  return 'Erro';
+interface HotspotPanelProps {
+  vistaId: string;
+  storagePath: string;
+  renderPainelLateral?: (hotspotId: string, onExcluir: () => void, onFechar: () => void) => ReactNode;
 }
 
-export function HotspotEditor() {
-  const { vistaId } = useParams();
+export function HotspotPanel({ vistaId, storagePath, renderPainelLateral }: HotspotPanelProps) {
+  const { t } = useI18n();
   const imgRef = useRef<HTMLDivElement>(null);
 
-  const [vista, setVista] = useState<ImagemVista | null>(null);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [hotspots, setHotspots] = useState<Hotspot[]>([]);
   const [estruturas, setEstruturas] = useState<EstruturaAnatomica[]>([]);
@@ -33,15 +32,16 @@ export function HotspotEditor() {
   const [salvando, setSalvando] = useState(false);
   const [hotspotSelecionado, setHotspotSelecionado] = useState<string | null>(null);
 
+  function erroMensagem(err: unknown): string {
+    if (err && typeof err === 'object' && 'message' in err) return String((err as { message: unknown }).message);
+    return t('hotspotEditor.erroGenerico');
+  }
+
   useEffect(() => {
-    if (!vistaId) return;
-    getVista(vistaId).then(async (v) => {
-      setVista(v);
-      setImageUrl(await getImagemUrl(v.storage_path));
-    });
+    getImagemUrl(storagePath).then(setImageUrl);
     listHotspots(vistaId).then(setHotspots);
     listEstruturas().then(setEstruturas);
-  }, [vistaId]);
+  }, [vistaId, storagePath]);
 
   function relativePos(e: MouseEvent): { x: number; y: number } {
     const rect = imgRef.current!.getBoundingClientRect();
@@ -75,7 +75,7 @@ export function HotspotEditor() {
   }
 
   async function handleSalvar() {
-    if (!pendente || !nomeEstrutura.trim() || !vistaId) return;
+    if (!pendente || !nomeEstrutura.trim()) return;
     setErro(null);
     setSalvando(true);
     try {
@@ -104,27 +104,38 @@ export function HotspotEditor() {
     return estruturas.find((e) => e.id === id)?.nome ?? '?';
   }
 
-  if (!vista || !imageUrl) return <p className="max-w-2xl mx-auto mt-16 text-center">Carregando...</p>;
+  async function handleExcluirHotspot(id: string) {
+    if (!window.confirm(t('hotspotEditor.confirmarExcluirHotspot'))) return;
+    await deleteHotspot(id);
+    setHotspots((prev) => prev.filter((h) => h.id !== id));
+    setHotspotSelecionado(null);
+  }
+
+  if (!imageUrl) return <p className="text-sm text-center">{t('comum.carregando')}</p>;
 
   return (
-    <div className="max-w-2xl mx-auto mt-16 p-8 bg-surface rounded-lg shadow-lg">
-      <h1 className="text-2xl mb-4">Hotspots — {vista.angulo}</h1>
-
-      <div className="flex gap-2 mb-4">
-        <button
-          type="button"
-          onClick={() => setModo('ponto')}
-          className={`text-sm rounded-full px-4 py-1 ${modo === 'ponto' ? 'bg-accent text-bg' : 'bg-bg border border-divider'}`}
-        >
-          Ponto
-        </button>
-        <button
-          type="button"
-          onClick={() => setModo('regiao')}
-          className={`text-sm rounded-full px-4 py-1 ${modo === 'regiao' ? 'bg-accent text-bg' : 'bg-bg border border-divider'}`}
-        >
-          Região (arraste)
-        </button>
+    <div className="flex gap-4 items-start flex-wrap">
+    <div className="flex-1 min-w-0">
+      <div className="flex items-center gap-2 mb-4">
+        <span className="text-[11px] uppercase tracking-wide font-bold text-accent-700/60">
+          {t('hotspotEditor.marcador')}
+        </span>
+        <div className="flex gap-1 p-1 rounded-full bg-neutral-200">
+          <button
+            type="button"
+            onClick={() => setModo('ponto')}
+            className={`text-xs px-3 py-1.5 rounded-full font-semibold ${modo === 'ponto' ? 'bg-accent text-bg' : 'text-accent-900/60'}`}
+          >
+            {t('hotspotEditor.ponto')}
+          </button>
+          <button
+            type="button"
+            onClick={() => setModo('regiao')}
+            className={`text-xs px-3 py-1.5 rounded-full font-semibold ${modo === 'regiao' ? 'bg-accent text-bg' : 'text-accent-900/60'}`}
+          >
+            {t('hotspotEditor.regiao')}
+          </button>
+        </div>
       </div>
 
       <div
@@ -134,40 +145,50 @@ export function HotspotEditor() {
         onMouseUp={handleMouseUp}
         className="relative w-full aspect-[4/3] bg-neutral-200 rounded-lg overflow-hidden cursor-crosshair select-none"
       >
-        <img src={imageUrl} alt={vista.angulo} className="w-full h-full object-contain pointer-events-none" />
+        <img src={imageUrl} alt="" className="w-full h-full object-contain pointer-events-none" />
 
-        {hotspots.map((h) =>
-          h.tipo === 'ponto' ? (
+        {hotspots.map((h) => (
+          <Fragment key={h.id}>
+            {h.tipo === 'ponto' ? (
+              <div
+                onMouseDown={(e) => e.stopPropagation()}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setHotspotSelecionado(h.id);
+                }}
+                className="absolute w-4 h-4 -ml-2 -mt-2 rounded-full border-2 border-accent bg-accent/30 cursor-pointer hover:bg-accent/60"
+                style={{ left: `${h.coord_x * 100}%`, top: `${h.coord_y * 100}%` }}
+              />
+            ) : (
+              <div
+                onMouseDown={(e) => e.stopPropagation()}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setHotspotSelecionado(h.id);
+                }}
+                className="absolute rounded-full border-2 border-accent-2-600 bg-accent-2-600/20 cursor-pointer hover:bg-accent-2-600/40"
+                style={{
+                  left: `${h.coord_x * 100}%`,
+                  top: `${h.coord_y * 100}%`,
+                  width: `${(h.largura ?? 0) * 100}%`,
+                  height: `${(h.altura ?? 0) * 100}%`,
+                }}
+              />
+            )}
             <div
-              key={h.id}
-              onMouseDown={(e) => e.stopPropagation()}
               onClick={(e) => {
                 e.stopPropagation();
                 setHotspotSelecionado(h.id);
               }}
-              className="absolute w-4 h-4 -ml-2 -mt-2 rounded-full border-2 border-accent bg-accent/30 cursor-pointer hover:bg-accent/60"
-              style={{ left: `${h.coord_x * 100}%`, top: `${h.coord_y * 100}%` }}
-              title={nomeDaEstrutura(h.estrutura_id)}
-            />
-          ) : (
-            <div
-              key={h.id}
-              onMouseDown={(e) => e.stopPropagation()}
-              onClick={(e) => {
-                e.stopPropagation();
-                setHotspotSelecionado(h.id);
-              }}
-              className="absolute rounded-full border-2 border-accent-2-600 bg-accent-2-600/20 cursor-pointer hover:bg-accent-2-600/40"
-              style={{
-                left: `${h.coord_x * 100}%`,
-                top: `${h.coord_y * 100}%`,
-                width: `${(h.largura ?? 0) * 100}%`,
-                height: `${(h.altura ?? 0) * 100}%`,
-              }}
-              title={nomeDaEstrutura(h.estrutura_id)}
-            />
-          ),
-        )}
+              className={`absolute -translate-x-1/2 -translate-y-full text-xs font-heading px-2.5 py-0.5 rounded-full whitespace-nowrap cursor-pointer ${
+                h.tipo === 'regiao' ? 'bg-accent-2-600 text-bg' : 'bg-accent text-bg'
+              }`}
+              style={{ left: `${h.coord_x * 100}%`, top: `${h.coord_y * 100 - 3}%` }}
+            >
+              {nomeDaEstrutura(h.estrutura_id)}
+            </div>
+          </Fragment>
+        ))}
 
         {pendente && pendente.tipo === 'ponto' && (
           <div
@@ -192,14 +213,14 @@ export function HotspotEditor() {
         <div className="mt-4 flex flex-col gap-2">
           <input
             type="text"
-            list="estruturas-lista"
-            placeholder="Nome da estrutura anatômica"
+            list={`estruturas-lista-${vistaId}`}
+            placeholder={t('hotspotEditor.nomeEstrutura')}
             value={nomeEstrutura}
             onChange={(e) => setNomeEstrutura(e.target.value)}
             autoFocus
             className="bg-bg border border-divider rounded-full px-4 py-2 text-sm"
           />
-          <datalist id="estruturas-lista">
+          <datalist id={`estruturas-lista-${vistaId}`}>
             {estruturas.map((e) => (
               <option key={e.id} value={e.nome} />
             ))}
@@ -212,7 +233,7 @@ export function HotspotEditor() {
               disabled={salvando || !nomeEstrutura.trim()}
               className="bg-accent text-bg font-heading rounded-full px-4 py-2 text-sm disabled:opacity-50"
             >
-              {salvando ? 'Salvando...' : 'Salvar hotspot'}
+              {salvando ? t('hotspotEditor.salvando') : t('hotspotEditor.salvarHotspot')}
             </button>
             <button
               type="button"
@@ -222,7 +243,7 @@ export function HotspotEditor() {
               }}
               className="text-sm text-accent-700 underline"
             >
-              Cancelar
+              {t('comum.cancelar')}
             </button>
           </div>
         </div>
@@ -230,16 +251,21 @@ export function HotspotEditor() {
 
       {erro && <p className="text-accent-700 text-sm mt-2">{erro}</p>}
 
-      {hotspotSelecionado && (
-        <div className="mt-4 p-4 bg-bg rounded-lg border border-divider">
-          <PerguntaForm hotspotId={hotspotSelecionado} onClose={() => setHotspotSelecionado(null)} />
-        </div>
-      )}
-
       <p className="text-xs text-accent-700/70 mt-4">
-        {hotspots.length} hotspot(s) nesta vista. Clique num hotspot existente pra editar a pergunta.
-        {modo === 'ponto' ? ' Clique na imagem pra marcar um ponto novo.' : ' Arraste na imagem pra marcar uma região nova.'}
+        {t('hotspotEditor.contagem', { n: hotspots.length })}
+        {modo === 'ponto' ? t('hotspotEditor.dicaPonto') : t('hotspotEditor.dicaRegiao')}
       </p>
+    </div>
+
+    {hotspotSelecionado && renderPainelLateral && (
+      <div className="flex-none w-full sm:w-72">
+        {renderPainelLateral(
+          hotspotSelecionado,
+          () => handleExcluirHotspot(hotspotSelecionado),
+          () => setHotspotSelecionado(null),
+        )}
+      </div>
+    )}
     </div>
   );
 }
