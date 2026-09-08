@@ -1,8 +1,10 @@
 import { useState, type FormEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../../lib/supabaseClient';
+import { useI18n } from '../../i18n';
 
 export function SignUp() {
+  const { t } = useI18n();
   const [nome, setNome] = useState('');
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
@@ -34,9 +36,9 @@ export function SignUp() {
   if (sucesso) {
     return (
       <div className="max-w-sm mx-auto mt-16 p-8 text-center bg-surface rounded-lg shadow-lg">
-        <p>Cadastro feito. Confirma o email antes de entrar (se a confirmação estiver ativa no projeto).</p>
+        <p>{t('auth.cadastro.sucesso')}</p>
         <Link to="/login" className="text-accent font-semibold underline mt-4 inline-block">
-          Ir para login
+          {t('auth.cadastro.irLogin')}
         </Link>
       </div>
     );
@@ -44,11 +46,11 @@ export function SignUp() {
 
   return (
     <form onSubmit={handleSubmit} className="max-w-sm mx-auto mt-16 flex flex-col gap-4 p-8 bg-surface rounded-lg shadow-lg">
-      <h1 className="text-2xl mb-2">Cadastro</h1>
+      <h1 className="text-2xl mb-2">{t('auth.cadastro.titulo')}</h1>
 
       <input
         type="text"
-        placeholder="Nome"
+        placeholder={t('campo.nome')}
         value={nome}
         onChange={(e) => setNome(e.target.value)}
         required
@@ -56,7 +58,7 @@ export function SignUp() {
       />
       <input
         type="email"
-        placeholder="Email"
+        placeholder={t('campo.email')}
         value={email}
         onChange={(e) => setEmail(e.target.value)}
         required
@@ -64,7 +66,7 @@ export function SignUp() {
       />
       <input
         type="password"
-        placeholder="Senha"
+        placeholder={t('campo.senha')}
         value={senha}
         onChange={(e) => setSenha(e.target.value)}
         required
@@ -79,11 +81,11 @@ export function SignUp() {
         disabled={loading}
         className="bg-accent text-bg font-heading rounded-full px-4 py-2 disabled:opacity-50 hover:bg-accent-600"
       >
-        {loading ? 'Cadastrando...' : 'Cadastrar'}
+        {loading ? t('auth.cadastro.cadastrando') : t('auth.cadastro.cadastrar')}
       </button>
 
       <Link to="/login" className="text-sm text-accent font-semibold underline text-center">
-        Já tenho conta
+        {t('auth.cadastro.jaTenhoConta')}
       </Link>
     </form>
   );

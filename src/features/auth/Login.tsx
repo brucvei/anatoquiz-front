@@ -1,8 +1,10 @@
 import { useState, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabaseClient';
+import { useI18n } from '../../i18n';
 
 export function Login() {
+  const { t } = useI18n();
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
   const [erro, setErro] = useState<string | null>(null);
@@ -28,11 +30,11 @@ export function Login() {
 
   return (
     <form onSubmit={handleSubmit} className="max-w-sm mx-auto mt-16 flex flex-col gap-4 p-8 bg-surface rounded-lg shadow-lg">
-      <h1 className="text-2xl mb-2">Login</h1>
+      <h1 className="text-2xl mb-2">{t('auth.login.titulo')}</h1>
 
       <input
         type="email"
-        placeholder="Email"
+        placeholder={t('campo.email')}
         value={email}
         onChange={(e) => setEmail(e.target.value)}
         required
@@ -40,7 +42,7 @@ export function Login() {
       />
       <input
         type="password"
-        placeholder="Senha"
+        placeholder={t('campo.senha')}
         value={senha}
         onChange={(e) => setSenha(e.target.value)}
         required
@@ -54,11 +56,11 @@ export function Login() {
         disabled={loading}
         className="bg-accent text-bg font-heading rounded-full px-4 py-2 disabled:opacity-50 hover:bg-accent-600"
       >
-        {loading ? 'Entrando...' : 'Entrar'}
+        {loading ? t('auth.login.entrando') : t('auth.login.entrar')}
       </button>
 
       <Link to="/cadastro" className="text-sm text-accent font-semibold underline text-center">
-        Criar conta
+        {t('auth.login.criarConta')}
       </Link>
     </form>
   );
