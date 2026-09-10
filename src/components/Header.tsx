@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabaseClient';
 import { useAuth } from '../hooks/useAuth';
 import { useI18n } from '../i18n';
@@ -41,18 +41,22 @@ export function Header() {
       <span className="flex items-center flex-wrap gap-x-3 gap-y-1">
         {user && (
           <>
-            <Link to="/buscar" className="text-sm text-accent-700 font-semibold whitespace-nowrap">
-              {t('header.buscar')}
-            </Link>
-            <Link to="/meus-quizzes" className="text-sm text-accent-700 font-semibold whitespace-nowrap">
-              {t('header.meusQuizzes')}
-            </Link>
-            <Link to="/quiz/novo" className="text-sm text-accent-700 font-semibold whitespace-nowrap">
-              {t('header.criarQuiz')}
-            </Link>
-            <Link to="/ranking" className="text-sm text-accent-700 font-semibold whitespace-nowrap">
-              {t('header.ranking')}
-            </Link>
+            {[
+              { to: '/buscar', label: t('header.buscar') },
+              { to: '/meus-quizzes', label: t('header.meusQuizzes') },
+              { to: '/quiz/novo', label: t('header.criarQuiz') },
+              { to: '/ranking', label: t('header.ranking') },
+            ].map((item) => (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                className={({ isActive }) =>
+                  `text-sm whitespace-nowrap ${isActive ? 'font-semibold text-accent-700' : 'text-ink/60'}`
+                }
+              >
+                {item.label}
+              </NavLink>
+            ))}
             <div className="relative" ref={menuRef}>
               <button
                 type="button"

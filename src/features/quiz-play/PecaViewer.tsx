@@ -37,21 +37,6 @@ export function PecaViewer({
 
   return (
     <div>
-      <div className="flex gap-2 mb-4 flex-wrap">
-        {vistas.map((v) => (
-          <button
-            key={v.id}
-            type="button"
-            onClick={() => onVistaChange(v)}
-            className={`text-sm rounded-full px-4 py-1 ${
-              vistaAtual?.id === v.id ? 'bg-accent text-bg' : 'bg-bg border border-divider'
-            }`}
-          >
-            {t(`angulo.${v.angulo}`)}
-          </button>
-        ))}
-      </div>
-
       <div className="relative w-full aspect-[4/3] bg-neutral-200 rounded-lg overflow-hidden">
         {imageUrl && (
           <img
@@ -102,6 +87,26 @@ export function PecaViewer({
             </div>
           </>
         )}
+      </div>
+
+      <div className="flex items-center gap-3 mt-4">
+        <span className="text-[11px] uppercase tracking-wide font-bold text-accent-700/45 flex-none">
+          {t('pecaViewer.vistas')}
+        </span>
+        <div className="flex-1 flex gap-2">
+          {vistas.map((v) => (
+            <button
+              key={v.id}
+              type="button"
+              onClick={() => onVistaChange(v)}
+              className={`flex-1 h-10 rounded-full text-xs font-bold transition-colors ${
+                vistaAtual?.id === v.id ? 'bg-accent text-bg' : 'bg-bg border border-divider'
+              }`}
+            >
+              {t(`angulo.${v.angulo}`)}
+            </button>
+          ))}
+        </div>
       </div>
     </div>
   );

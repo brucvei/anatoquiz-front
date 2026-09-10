@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { Loading } from '../../components/Loading';
 import { useAuth } from '../../hooks/useAuth';
 import { useI18n } from '../../i18n';
 import { TAMANHO_PAGINA, deleteQuiz, listMeusQuizzes } from '../quiz-builder/api';
@@ -45,7 +46,7 @@ export function MyQuizzes() {
     }
   }
 
-  if (carregando) return <p className="max-w-2xl mx-auto mt-16 text-center">{t('comum.carregando')}</p>;
+  if (carregando) return <Loading className="mt-16" />;
 
   return (
     <div className="max-w-2xl mx-auto mt-16 p-8">

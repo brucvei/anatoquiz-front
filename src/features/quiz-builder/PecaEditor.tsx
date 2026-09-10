@@ -46,33 +46,6 @@ export function PecaEditor({ peca, onVistasCarregadas }: PecaEditorProps) {
 
   return (
     <div>
-      <div className="flex gap-2 flex-wrap mb-3">
-        {vistas.map((v) => (
-          <button
-            key={v.id}
-            type="button"
-            onClick={() => {
-              setVistaAtivaId(v.id);
-              setMostrarUpload(false);
-            }}
-            className={`text-xs px-3 py-1.5 rounded-full font-semibold ${
-              vistaAtivaId === v.id && !mostrarUpload ? 'bg-accent text-bg' : 'border border-divider text-accent-700'
-            }`}
-          >
-            {t(`angulo.${v.angulo}`)}
-          </button>
-        ))}
-        <button
-          type="button"
-          onClick={() => setMostrarUpload(true)}
-          className={`text-xs px-3 py-1.5 rounded-full font-semibold border border-dashed ${
-            mostrarUpload ? 'border-accent text-accent' : 'border-divider text-accent-700/70'
-          }`}
-        >
-          + {t('quizForm.novaVista')}
-        </button>
-      </div>
-
       {mostrarUpload && (
         <div className="flex items-center gap-2 flex-wrap p-3 bg-bg rounded-md mb-3">
           <select
@@ -91,24 +64,52 @@ export function PecaEditor({ peca, onVistasCarregadas }: PecaEditorProps) {
       )}
 
       {vistaAtiva && !mostrarUpload && (
-        <div>
-          <h4 className="text-sm font-heading mb-3">
-            {peca.nome} — {t('quizForm.vistaDe', { angulo: t(`angulo.${vistaAtiva.angulo}`) })}
-          </h4>
-          <HotspotPanel
-            vistaId={vistaAtiva.id}
-            storagePath={vistaAtiva.storage_path}
-            renderPainelLateral={(hotspotId, onExcluir, onFechar) => (
-              <div className="p-4 bg-surface rounded-lg border border-divider flex flex-col gap-3">
-                <PerguntaForm hotspotId={hotspotId} onClose={onFechar} />
-                <button type="button" onClick={onExcluir} className="text-accent-700 text-xs underline self-start">
-                  {t('hotspotEditor.excluirHotspot')}
-                </button>
-              </div>
-            )}
-          />
-        </div>
+        <HotspotPanel
+          vistaId={vistaAtiva.id}
+          storagePath={vistaAtiva.storage_path}
+          titulo={`${peca.nome} — ${t('quizForm.vistaDe', { angulo: t(`angulo.${vistaAtiva.angulo}`) })}`}
+          renderPainelLateral={(hotspotId, onExcluir, onFechar) => (
+            <div className="p-4 bg-surface rounded-lg border border-divider flex flex-col gap-3">
+              <PerguntaForm hotspotId={hotspotId} onClose={onFechar} />
+              <button type="button" onClick={onExcluir} className="text-accent-700 text-xs underline self-start">
+                {t('hotspotEditor.excluirHotspot')}
+              </button>
+            </div>
+          )}
+        />
       )}
+
+      <div className="flex items-center gap-3 mt-4">
+        <span className="text-[11px] uppercase tracking-wide font-bold text-accent-700/45 flex-none">
+          {t('pecaViewer.vistas')}
+        </span>
+        <div className="flex-1 flex gap-2 flex-wrap">
+          {vistas.map((v) => (
+            <button
+              key={v.id}
+              type="button"
+              onClick={() => {
+                setVistaAtivaId(v.id);
+                setMostrarUpload(false);
+              }}
+              className={`text-xs px-3 py-1.5 rounded-full font-bold ${
+                vistaAtivaId === v.id && !mostrarUpload ? 'bg-accent text-bg' : 'border border-divider text-accent-700'
+              }`}
+            >
+              {t(`angulo.${v.angulo}`)}
+            </button>
+          ))}
+          <button
+            type="button"
+            onClick={() => setMostrarUpload(true)}
+            className={`text-xs px-3 py-1.5 rounded-full font-bold border border-dashed ${
+              mostrarUpload ? 'border-accent text-accent' : 'border-divider text-accent-700/70'
+            }`}
+          >
+            + {t('quizForm.novaVista')}
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

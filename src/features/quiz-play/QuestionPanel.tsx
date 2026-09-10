@@ -1,5 +1,6 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import type { CorrigirRespostaResult, Pergunta } from '../../types/database';
+import { Loading } from '../../components/Loading';
 import { useI18n } from '../../i18n';
 import { corrigirResposta, getPerguntaDoHotspot, listAlternativasJogo } from './api';
 
@@ -69,12 +70,12 @@ export function QuestionPanel({ hotspotId, sessaoId, resultadoExistente, onRespo
     }
   }
 
-  if (!pergunta) return <p className="text-sm text-center">{t('comum.carregando')}</p>;
+  if (!pergunta) return <Loading />;
 
   const LETRAS = 'ABCD';
 
   return (
-    <div className="bg-surface rounded-lg shadow-lg p-6">
+    <div>
       <span className="text-[11px] uppercase tracking-wide font-bold text-accent-700/60">
         {t('questionModal.kicker')}
       </span>
@@ -122,12 +123,12 @@ export function QuestionPanel({ hotspotId, sessaoId, resultadoExistente, onRespo
                 type="button"
                 onClick={() => handleResponderMultipla(a.id)}
                 disabled={respondendo}
-                className="flex items-center gap-3 text-left px-3 py-2 rounded-full text-sm border-2 bg-bg border-divider disabled:cursor-default"
+                className="flex items-center gap-3 text-left px-4 py-3 rounded-md text-sm font-semibold border-2 bg-bg border-divider disabled:cursor-default"
               >
-                <span className="flex-none w-6 h-6 rounded-full bg-neutral-300 flex items-center justify-center text-xs font-heading">
+                <span className="flex-none w-[26px] h-[26px] rounded-full bg-neutral-200 flex items-center justify-center text-xs font-heading">
                   {LETRAS[i]}
                 </span>
-                {a.texto}
+                <span className="flex-1">{a.texto}</span>
               </button>
             ))}
           </div>
@@ -137,23 +138,28 @@ export function QuestionPanel({ hotspotId, sessaoId, resultadoExistente, onRespo
       {resultado && fase === 'multipla' && alternativaEscolhida && (
         <div className="flex flex-col gap-2 mb-2">
           {alternativas.map((a, i) => {
+            const acerto = i === alternativas.findIndex((alt) => alt.id === alternativaEscolhida) && resultado.acertou;
             const escolhida = alternativaEscolhida === a.id;
             const estilo = escolhida
               ? resultado.acertou
-                ? 'bg-accent-2-200 border-accent-2-600'
-                : 'bg-accent-200 border-accent-700'
-              : 'bg-bg border-divider';
+                ? 'bg-accent-2-200 border-accent-2-600 text-accent-2-900'
+                : 'bg-accent-200 border-accent-700 text-accent-900'
+              : 'bg-bg border-divider text-accent-900/45';
             const chip = escolhida
               ? resultado.acertou
                 ? 'bg-accent-2-600 text-bg'
                 : 'bg-accent-700 text-bg'
-              : 'bg-neutral-300';
+              : 'bg-neutral-200';
             return (
-              <div key={a.id} className={`flex items-center gap-3 px-3 py-2 rounded-full text-sm border-2 ${estilo}`}>
-                <span className={`flex-none w-6 h-6 rounded-full flex items-center justify-center text-xs font-heading ${chip}`}>
+              <div
+                key={a.id}
+                className={`flex items-center gap-3 px-4 py-3 rounded-md text-sm font-semibold border-2 ${estilo}`}
+              >
+                <span className={`flex-none w-[26px] h-[26px] rounded-full flex items-center justify-center text-xs font-heading ${chip}`}>
                   {LETRAS[i]}
                 </span>
-                {a.texto}
+                <span className="flex-1">{a.texto}</span>
+                {escolhida && <span className="text-base font-bold">{acerto ? '✓' : '✕'}</span>}
               </div>
             );
           })}
@@ -180,8 +186,6 @@ export function QuestionPanel({ hotspotId, sessaoId, resultadoExistente, onRespo
           )}
         </div>
       )}
-
-      {!resultado && <p className="text-[11px] text-accent-700/50 mt-4">{t('questionModal.dicaServidor')}</p>}
     </div>
   );
 }

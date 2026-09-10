@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
+import { Loading } from '../../components/Loading';
 import { useAuth } from '../../hooks/useAuth';
 import { useI18n } from '../../i18n';
 import { getQuiz } from '../quiz-builder/api';
@@ -27,7 +28,7 @@ export function Ranking() {
         {quizId ? t('ranking.subtituloQuiz') : t('ranking.subtitulo')}
       </p>
 
-      {carregando && <p className="text-sm">{t('comum.carregando')}</p>}
+      {carregando && <Loading />}
       {!carregando && itens.length === 0 && <p className="text-sm text-accent-700/70">{t('ranking.vazio')}</p>}
 
       <div className="flex flex-col gap-2">

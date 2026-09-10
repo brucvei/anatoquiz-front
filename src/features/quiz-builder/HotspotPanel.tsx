@@ -1,5 +1,6 @@
 import { Fragment, useEffect, useRef, useState, type MouseEvent, type ReactNode } from 'react';
 import type { EstruturaAnatomica, Hotspot, TipoHotspot } from '../../types/database';
+import { Loading } from '../../components/Loading';
 import { useI18n } from '../../i18n';
 import { createHotspot, deleteHotspot, findOrCreateEstrutura, getImagemUrl, listEstruturas, listHotspots } from './api';
 
@@ -14,10 +15,11 @@ interface Pendente {
 interface HotspotPanelProps {
   vistaId: string;
   storagePath: string;
+  titulo: string;
   renderPainelLateral?: (hotspotId: string, onExcluir: () => void, onFechar: () => void) => ReactNode;
 }
 
-export function HotspotPanel({ vistaId, storagePath, renderPainelLateral }: HotspotPanelProps) {
+export function HotspotPanel({ vistaId, storagePath, titulo, renderPainelLateral }: HotspotPanelProps) {
   const { t } = useI18n();
   const imgRef = useRef<HTMLDivElement>(null);
 
@@ -111,30 +113,33 @@ export function HotspotPanel({ vistaId, storagePath, renderPainelLateral }: Hots
     setHotspotSelecionado(null);
   }
 
-  if (!imageUrl) return <p className="text-sm text-center">{t('comum.carregando')}</p>;
+  if (!imageUrl) return <Loading />;
 
   return (
     <div className="flex gap-4 items-start flex-wrap">
     <div className="flex-1 min-w-0">
-      <div className="flex items-center gap-2 mb-4">
-        <span className="text-[11px] uppercase tracking-wide font-bold text-accent-700/60">
-          {t('hotspotEditor.marcador')}
-        </span>
-        <div className="flex gap-1 p-1 rounded-full bg-neutral-200">
-          <button
-            type="button"
-            onClick={() => setModo('ponto')}
-            className={`text-xs px-3 py-1.5 rounded-full font-semibold ${modo === 'ponto' ? 'bg-accent text-bg' : 'text-accent-900/60'}`}
-          >
-            {t('hotspotEditor.ponto')}
-          </button>
-          <button
-            type="button"
-            onClick={() => setModo('regiao')}
-            className={`text-xs px-3 py-1.5 rounded-full font-semibold ${modo === 'regiao' ? 'bg-accent text-bg' : 'text-accent-900/60'}`}
-          >
-            {t('hotspotEditor.regiao')}
-          </button>
+      <div className="flex items-center justify-between gap-2 mb-3">
+        <h4 className="m-0">{titulo}</h4>
+        <div className="flex items-center gap-2">
+          <span className="text-[11px] uppercase tracking-wide font-bold text-accent-700/45">
+            {t('hotspotEditor.marcador')}
+          </span>
+          <div className="flex gap-1.5 p-1 rounded-full bg-neutral-200">
+            <button
+              type="button"
+              onClick={() => setModo('ponto')}
+              className={`text-xs px-3.5 py-1.5 rounded-full font-bold ${modo === 'ponto' ? 'bg-accent text-bg' : 'text-accent-900/60'}`}
+            >
+              {t('hotspotEditor.ponto')}
+            </button>
+            <button
+              type="button"
+              onClick={() => setModo('regiao')}
+              className={`text-xs px-3.5 py-1.5 rounded-full font-bold ${modo === 'regiao' ? 'bg-accent text-bg' : 'text-accent-900/60'}`}
+            >
+              {t('hotspotEditor.regiao')}
+            </button>
+          </div>
         </div>
       </div>
 
@@ -143,7 +148,7 @@ export function HotspotPanel({ vistaId, storagePath, renderPainelLateral }: Hots
         onClick={handleClick}
         onMouseDown={handleMouseDown}
         onMouseUp={handleMouseUp}
-        className="relative w-full aspect-[4/3] bg-neutral-200 rounded-lg overflow-hidden cursor-crosshair select-none"
+        className="relative w-full aspect-[4/3] bg-neutral-200 rounded-lg overflow-hidden cursor-crosshair select-none border-2 border-dashed border-neutral-400"
       >
         <img src={imageUrl} alt="" className="w-full h-full object-contain pointer-events-none" />
 
@@ -258,7 +263,7 @@ export function HotspotPanel({ vistaId, storagePath, renderPainelLateral }: Hots
     </div>
 
     {hotspotSelecionado && renderPainelLateral && (
-      <div className="flex-none w-full sm:w-72">
+      <div className="flex-none w-full sm:w-[320px]">
         {renderPainelLateral(
           hotspotSelecionado,
           () => handleExcluirHotspot(hotspotSelecionado),

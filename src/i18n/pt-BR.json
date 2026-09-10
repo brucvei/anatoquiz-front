@@ -52,7 +52,7 @@
   "quizForm.vistaDe": "vista {angulo}",
   "quizForm.salvePrimeiro": "Salve o quiz primeiro pra poder adicionar peças.",
   "quizForm.semPecaSelecionada": "Adicione uma peça na barra lateral pra começar.",
-  "quizForm.dicaMarcador": "Cada vista aceita uma imagem fixa. A marcação pode ser um ponto com seta ou uma região desenhada sobre a imagem — as duas salvas em coordenadas relativas, então funcionam em qualquer tamanho de tela.",
+  "quizForm.dicaMarcador": "Cada vista aceita uma imagem fixa. A marcação pode ser um ponto ou uma região desenhada sobre a imagem — as duas salvas em coordenadas relativas, então funcionam em qualquer tamanho de tela.",
   "pecaForm.criando": "Criando...",
   "pecaForm.criarEAdicionar": "Criar peça e adicionar vistas",
   "pecaForm.vistas": "{nome} — vistas",
@@ -127,11 +127,12 @@
   "history.ver": "Ver",
 
   "pecaViewer.semVistas": "Essa peça ainda não tem vistas cadastradas.",
+  "pecaViewer.vistas": "Vistas",
 
   "quizPlay.semPecas": "Esse quiz ainda não tem peças cadastradas.",
   "quizPlay.verResultado": "Ver resultado",
   "quizPlay.perguntaXdeY": "Pergunta {atual} de {total}",
-  "quizPlay.respondidas": "{n}/{total} respondidas",
+  "quizPlay.pontos": "{n} pts",
   "quizPlay.anterior": "◂ Anterior",
   "quizPlay.proxima": "Próxima ▸",
   "quizPlay.jaRespondida": "Já respondida",
@@ -140,7 +141,6 @@
   "quizPlay.vistaTag": "Vista {angulo}",
 
   "questionModal.kicker": "Pergunta",
-  "questionModal.dicaServidor": "A correção roda no servidor: o cliente não sabe qual é a resposta certa antes de você responder.",
   "questionModal.dicaLivre": "Acerte de primeira, sem ver as alternativas, e ganhe o dobro de pontos.",
   "questionModal.digiteResposta": "Digite sua resposta",
   "questionModal.verificando": "Verificando...",

@@ -1,5 +1,6 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { Loading } from '../../components/Loading';
 import { useAuth } from '../../hooks/useAuth';
 import { useI18n } from '../../i18n';
 import type { PecaAnatomica, SistemaAnatomico } from '../../types/database';
@@ -141,7 +142,7 @@ export function QuizBuilder() {
   }
 
   if (idDaUrl && carregandoQuiz) {
-    return <p className="max-w-sm mx-auto mt-16 text-center">{t('comum.carregando')}</p>;
+    return <Loading className="mt-16" />;
   }
 
   if (idDaUrl && !souDono) {

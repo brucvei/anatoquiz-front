@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useLocation, useParams } from 'react-router-dom';
+import { Loading } from '../../components/Loading';
 import { useAuth } from '../../hooks/useAuth';
 import type { Quiz } from '../../types/database';
 import { useI18n } from '../../i18n';
@@ -41,7 +42,11 @@ function ListaRevisao({ itens, t }: { itens: TentativaComEstrutura[]; t: (k: str
           key={t2.id}
           className={`flex items-center gap-3 px-4 py-2 rounded-md ${t2.acertou ? 'bg-accent-2-200' : 'bg-accent-200'}`}
         >
-          <span className="flex-none w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold bg-bg">
+          <span
+            className={`flex-none w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-bg ${
+              t2.acertou ? 'bg-accent-2-600' : 'bg-accent-700'
+            }`}
+          >
             {t2.acertou ? '✓' : '✕'}
           </span>
           <div className="flex-1 text-sm">
@@ -77,7 +82,7 @@ export function QuizResult() {
     });
   }, [id, user]);
 
-  if (carregando || !quiz) return <p className="max-w-md mx-auto mt-16 text-center">{t('comum.carregando')}</p>;
+  if (carregando || !quiz) return <Loading className="mt-16" />;
 
   const sessoes = agruparPorSessao(tentativas);
   const sessaoIdEsperada = (location.state as { sessaoId?: string } | null)?.sessaoId;
@@ -87,11 +92,11 @@ export function QuizResult() {
   const total = tentativas.length;
 
   return (
-    <div className="max-w-md mx-auto mt-16 mb-16 p-8 bg-surface rounded-lg shadow-lg">
-      <div className="flex items-center gap-6 mb-6">
-        <div className="flex-none w-24 h-24 rounded-full bg-accent-200 border-4 border-accent flex flex-col items-center justify-center">
-          <span className="font-heading text-2xl text-accent-800">{sessaoAtual?.pontos ?? 0}</span>
-          <span className="text-[10px] uppercase tracking-wide font-bold text-accent-700">{t('quizResult.pontos')}</span>
+    <div className="max-w-[580px] mx-auto mt-16 mb-16 p-8 bg-surface rounded-lg shadow-lg">
+      <div className="flex items-center gap-6 mb-7">
+        <div className="flex-none w-[132px] h-[132px] rounded-full bg-accent-200 border-[7px] border-accent flex flex-col items-center justify-center">
+          <span className="font-heading text-[38px] leading-none text-accent-800">{sessaoAtual?.pontos ?? 0}</span>
+          <span className="text-[10px] uppercase tracking-wide font-bold text-accent-700 mt-1">{t('quizResult.pontos')}</span>
         </div>
         <div>
           <div className="text-xs uppercase tracking-wide font-bold text-accent-700/70">{t('quizResult.concluido')}</div>

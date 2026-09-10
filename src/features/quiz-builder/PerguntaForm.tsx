@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Loading } from '../../components/Loading';
 import { useI18n } from '../../i18n';
 import {
   createAlternativa,
@@ -109,7 +110,7 @@ export function PerguntaForm({ hotspotId, onClose }: PerguntaFormProps) {
   }
 
   if (carregando) {
-    return <p className="text-sm text-center">{t('comum.carregando')}</p>;
+    return <Loading />;
   }
 
   return (
