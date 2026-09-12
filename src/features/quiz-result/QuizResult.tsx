@@ -92,7 +92,7 @@ export function QuizResult() {
   const total = tentativas.length;
 
   return (
-    <div className="max-w-[580px] mx-auto mt-16 mb-16 p-8 bg-surface rounded-lg shadow-lg">
+    <div className="w-full max-w-[580px] mx-auto p-8">
       <div className="flex items-center gap-6 mb-7">
         <div className="flex-none w-[132px] h-[132px] rounded-full bg-accent-200 border-[7px] border-accent flex flex-col items-center justify-center">
           <span className="font-heading text-[38px] leading-none text-accent-800">{sessaoAtual?.pontos ?? 0}</span>

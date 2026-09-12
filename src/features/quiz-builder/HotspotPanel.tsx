@@ -95,6 +95,7 @@ export function HotspotPanel({ vistaId, storagePath, titulo, renderPainelLateral
       setEstruturas((prev) => (prev.some((e) => e.id === estrutura.id) ? prev : [...prev, estrutura]));
       setPendente(null);
       setNomeEstrutura('');
+      setHotspotSelecionado(hotspot.id);
     } catch (err) {
       setErro(erroMensagem(err));
     } finally {

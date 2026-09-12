@@ -75,7 +75,7 @@ export function QuizPlay() {
   const pontosGanhos = Array.from(respondidos.values()).reduce((soma, r) => soma + r.pontos, 0);
 
   return (
-    <div className="max-w-6xl mx-auto mt-8 mb-16 rounded-lg shadow-lg overflow-hidden bg-bg">
+    <div className="w-full">
       {pecas.length === 0 && (
         <p className="p-8 text-sm text-accent-700/70">{t('quizPlay.semPecas')}</p>
       )}

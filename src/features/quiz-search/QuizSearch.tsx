@@ -50,7 +50,7 @@ export function QuizSearch() {
   const listaFiltrada = filtroSistema ? quizzes.filter((q) => q.info?.sistemaNome === filtroSistema) : quizzes;
 
   return (
-    <div className="max-w-4xl mx-auto mt-16 mb-16 p-8">
+    <div className="w-full p-8">
       <h1 className="text-2xl mb-1">{t('quizSearch.titulo')}</h1>
       <p className="text-sm text-accent-700/70 mb-6 max-w-md">{t('quizSearch.subtitulo')}</p>
 
@@ -97,7 +97,7 @@ export function QuizSearch() {
 
       {!carregando && listaFiltrada.length === 0 && <p className="text-sm text-accent-700/70">{t('quizSearch.nenhum')}</p>}
 
-      <ul className="grid sm:grid-cols-2 gap-5">
+      <ul className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
         {listaFiltrada.map((q) => (
           <li key={q.id} className="bg-surface rounded-lg shadow-md overflow-hidden flex flex-col">
             <div className="relative h-[136px] bg-neutral-200">

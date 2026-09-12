@@ -47,7 +47,9 @@ export function PecaEditor({ peca, onVistasCarregadas }: PecaEditorProps) {
   return (
     <div>
       {mostrarUpload && (
-        <div className="flex items-center gap-2 flex-wrap p-3 bg-bg rounded-md mb-3">
+        <div className="p-4 rounded-md bg-bg mb-3">
+          <p className="text-sm font-semibold mb-3">{t('pecaForm.escolhaAnguloEEnvie')}</p>
+          <div className="flex items-center gap-2 flex-wrap">
           <select
             value={angulo}
             onChange={(e) => setAngulo(e.target.value as Angulo)}
@@ -60,6 +62,7 @@ export function PecaEditor({ peca, onVistasCarregadas }: PecaEditorProps) {
             ))}
           </select>
           <ImageUpload quizId={peca.quiz_id} onUploaded={handleUploaded} />
+          </div>
         </div>
       )}
 

@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from 'react';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Loading } from '../../components/Loading';
 import { useAuth } from '../../hooks/useAuth';
@@ -32,6 +32,8 @@ export function QuizBuilder() {
   const [erro, setErro] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [carregandoQuiz, setCarregandoQuiz] = useState(Boolean(idDaUrl));
+  const [statusAuto, setStatusAuto] = useState<'salvando' | 'salvo' | null>(null);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const [pecas, setPecas] = useState<PecaAnatomica[]>([]);
   const [vistasPorPeca, setVistasPorPeca] = useState<Record<string, number>>({});
@@ -67,6 +69,24 @@ export function QuizBuilder() {
     });
   }, [quizId]);
 
+  useEffect(() => {
+    if (!quizId || carregandoQuiz) return;
+    setStatusAuto('salvando');
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(async () => {
+      try {
+        await updateQuiz(quizId, { titulo, descricao, publico });
+        setStatusAuto('salvo');
+      } catch (err) {
+        setErro(erroMensagem(err));
+      }
+    }, 700);
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [titulo, descricao, publico, quizId, carregandoQuiz]);
+
   const souDono = !idDaUrl || autorId === user?.id;
 
   function erroMensagem(err: unknown): string {
@@ -74,20 +94,16 @@ export function QuizBuilder() {
     return t('quizForm.erroSalvar');
   }
 
-  async function handleSubmit(e: FormEvent) {
+  async function handleCriarQuiz(e: FormEvent) {
     e.preventDefault();
     if (!user) return;
     setErro(null);
     setLoading(true);
 
     try {
-      if (quizId) {
-        await updateQuiz(quizId, { titulo, descricao, publico });
-      } else {
-        const quiz = await createQuiz({ autor_id: user.id, titulo, descricao, publico });
-        setQuizId(quiz.id);
-        navigate(`/quiz/${quiz.id}/editar`, { replace: true });
-      }
+      const quiz = await createQuiz({ autor_id: user.id, titulo, descricao, publico });
+      setQuizId(quiz.id);
+      navigate(`/quiz/${quiz.id}/editar`, { replace: true });
     } catch (err) {
       setErro(erroMensagem(err));
     } finally {
@@ -150,12 +166,22 @@ export function QuizBuilder() {
   }
 
   const pecaSelecionada = pecas.find((p) => p.id === pecaSelecionadaId) ?? null;
+  const totalVistas = Object.values(vistasPorPeca).reduce((soma, n) => soma + n, 0);
+  const etapaAtual = !quizId ? 1 : totalVistas === 0 ? 2 : 3;
+  const etapas = [t('quizForm.etapa1'), t('quizForm.etapa2'), t('quizForm.etapa3')];
 
   return (
-    <div className="max-w-5xl mx-auto mt-16 mb-16 bg-surface rounded-lg shadow-lg overflow-hidden flex items-stretch flex-wrap">
+    <div className="w-full bg-surface flex items-stretch flex-wrap">
       <aside className="flex-none w-full md:w-72 p-6 border-b md:border-b-0 md:border-r border-divider flex flex-col gap-4">
-        <form onSubmit={handleSubmit} className="flex flex-col gap-3">
-          <h1 className="text-xl">{quizId ? t('quizForm.editarTitulo') : t('quizForm.criarTitulo')}</h1>
+        <form onSubmit={handleCriarQuiz} className="flex flex-col gap-3">
+          <div className="flex items-center justify-between gap-2">
+            <h1 className="text-xl">{quizId ? t('quizForm.editarTitulo') : t('quizForm.criarTitulo')}</h1>
+            {quizId && statusAuto && (
+              <span className="text-[11px] text-accent-700/60 whitespace-nowrap">
+                {statusAuto === 'salvando' ? t('quizForm.salvando') : `✓ ${t('quizForm.salvo')}`}
+              </span>
+            )}
+          </div>
 
           <input
             type="text"
@@ -178,13 +204,15 @@ export function QuizBuilder() {
 
           {erro && <p className="text-accent-700 text-sm">{erro}</p>}
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="bg-accent text-bg font-heading rounded-full px-4 py-2 text-sm disabled:opacity-50 hover:bg-accent-600"
-          >
-            {loading ? t('quizForm.salvando') : t('quizForm.salvar')}
-          </button>
+          {!quizId && (
+            <button
+              type="submit"
+              disabled={loading}
+              className="bg-accent text-bg font-heading rounded-full px-4 py-2 text-sm disabled:opacity-50 hover:bg-accent-600"
+            >
+              {loading ? t('quizForm.salvando') : t('quizForm.criarTitulo')}
+            </button>
+          )}
 
           {quizId && (
             <button
@@ -273,8 +301,37 @@ export function QuizBuilder() {
       </aside>
 
       <main className="flex-1 min-w-0 p-6">
-        {!quizId && <p className="text-sm text-accent-700/70">{t('quizForm.salvePrimeiro')}</p>}
-        {quizId && !pecaSelecionada && <p className="text-sm text-accent-700/70">{t('quizForm.semPecaSelecionada')}</p>}
+        <div className="flex items-center gap-2 mb-6 flex-wrap">
+          {etapas.map((label, i) => {
+            const n = i + 1;
+            const feita = n < etapaAtual;
+            const atual = n === etapaAtual;
+            return (
+              <div key={n} className="flex items-center gap-2">
+                <span
+                  className={`flex-none w-6 h-6 rounded-full flex items-center justify-center text-xs font-heading ${
+                    feita ? 'bg-accent-2-600 text-bg' : atual ? 'bg-accent text-bg' : 'bg-neutral-200 text-accent-900/50'
+                  }`}
+                >
+                  {feita ? '✓' : n}
+                </span>
+                <span className={`text-sm ${atual ? 'font-bold text-accent-900' : 'text-accent-900/50'}`}>{label}</span>
+                {n < 3 && <span className="text-accent-900/30 mx-1">—</span>}
+              </div>
+            );
+          })}
+        </div>
+
+        {!quizId && (
+          <div className="p-5 rounded-md border-2 border-dashed border-divider text-sm text-accent-700/80 max-w-md">
+            {t('quizForm.salvePrimeiro')}
+          </div>
+        )}
+        {quizId && !pecaSelecionada && (
+          <div className="p-5 rounded-md border-2 border-dashed border-divider text-sm text-accent-700/80 max-w-md">
+            {t('quizForm.semPecaSelecionada')}
+          </div>
+        )}
         {pecaSelecionada && (
           <PecaEditor
             key={pecaSelecionada.id}
