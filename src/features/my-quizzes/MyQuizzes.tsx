@@ -52,7 +52,7 @@ export function MyQuizzes() {
     <div className="max-w-2xl mx-auto mt-16 p-8">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl">{t('myQuizzes.titulo')}</h1>
-        <Link to="/historico" className="text-sm text-accent font-semibold underline">
+        <Link to="/historico" className="bg-bg border border-divider font-heading rounded-full px-4 py-2 text-sm">
           {t('myQuizzes.verHistorico')}
         </Link>
       </div>
@@ -67,14 +67,17 @@ export function MyQuizzes() {
               <div className="text-xs text-accent-700/70">{q.publico ? t('myQuizzes.publico') : t('myQuizzes.privado')}</div>
             </div>
             <div className="flex gap-3">
-              <Link to={`/quiz/${q.id}/editar`} className="text-sm text-accent font-semibold underline">
+              <Link
+                to={`/quiz/${q.id}/editar`}
+                className="bg-bg border border-divider font-heading rounded-full px-3 py-1.5 text-sm"
+              >
                 {t('myQuizzes.editar')}
               </Link>
               <button
                 type="button"
                 onClick={() => handleExcluir(q.id)}
                 disabled={excluindoId === q.id}
-                className="text-sm text-accent-700 underline disabled:opacity-50"
+                className="bg-bg border border-divider font-heading rounded-full px-3 py-1.5 text-sm disabled:opacity-50"
               >
                 {excluindoId === q.id ? t('myQuizzes.excluindo') : t('myQuizzes.excluir')}
               </button>
@@ -87,7 +90,7 @@ export function MyQuizzes() {
         <button
           type="button"
           onClick={handleCarregarMais}
-          className="mt-4 text-sm text-accent font-semibold underline mx-auto block"
+          className="mt-4 bg-bg border border-divider font-heading rounded-full px-4 py-2 text-sm mx-auto block"
         >
           {t('comum.carregarMais')}
         </button>

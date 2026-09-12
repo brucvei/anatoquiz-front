@@ -74,7 +74,11 @@ export function PecaEditor({ peca, onVistasCarregadas }: PecaEditorProps) {
           renderPainelLateral={(hotspotId, onExcluir, onFechar) => (
             <div className="p-4 bg-surface rounded-lg border border-divider flex flex-col gap-3">
               <PerguntaForm hotspotId={hotspotId} onClose={onFechar} />
-              <button type="button" onClick={onExcluir} className="text-accent-700 text-xs underline self-start">
+              <button
+                type="button"
+                onClick={onExcluir}
+                className="bg-bg border border-divider font-heading rounded-full px-3 py-1.5 text-xs self-start"
+              >
                 {t('hotspotEditor.excluirHotspot')}
               </button>
             </div>

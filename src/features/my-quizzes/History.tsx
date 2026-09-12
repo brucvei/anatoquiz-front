@@ -52,7 +52,10 @@ export function History() {
             </div>
             <div className="flex items-center gap-4">
               <span className="font-heading text-accent-700">{t('history.pontos', { n: h.pontos_total })}</span>
-              <Link to={`/quiz/${h.quiz_id}/resultado`} className="text-sm text-accent font-semibold underline">
+              <Link
+                to={`/quiz/${h.quiz_id}/resultado`}
+                className="bg-bg border border-divider font-heading rounded-full px-3 py-1.5 text-sm"
+              >
                 {t('history.ver')}
               </Link>
             </div>
@@ -64,7 +67,7 @@ export function History() {
         <button
           type="button"
           onClick={handleCarregarMais}
-          className="mt-4 text-sm text-accent font-semibold underline mx-auto block"
+          className="mt-4 bg-bg border border-divider font-heading rounded-full px-4 py-2 text-sm mx-auto block"
         >
           {t('comum.carregarMais')}
         </button>

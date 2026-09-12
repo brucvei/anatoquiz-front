@@ -131,7 +131,7 @@ export function QuizSearch() {
         <button
           type="button"
           onClick={handleCarregarMais}
-          className="mt-4 text-sm text-accent font-semibold underline mx-auto block"
+          className="mt-4 bg-bg border border-divider font-heading rounded-full px-4 py-2 text-sm mx-auto block"
         >
           {t('comum.carregarMais')}
         </button>

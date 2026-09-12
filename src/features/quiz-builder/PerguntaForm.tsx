@@ -47,6 +47,13 @@ export function PerguntaForm({ hotspotId, onClose }: PerguntaFormProps) {
 
   useEffect(() => {
     let ativo = true;
+    setCarregando(true);
+    setPerguntaId(null);
+    setEnunciado('');
+    setAlternativas(alternativasVazias());
+    setCorreta(0);
+    setSalvo(false);
+    setErro(null);
     async function carregar() {
       const pergunta = await getPerguntaDoHotspot(hotspotId);
       if (!ativo) return;
@@ -170,7 +177,11 @@ export function PerguntaForm({ hotspotId, onClose }: PerguntaFormProps) {
         >
           {salvando ? t('perguntaForm.salvando') : t('perguntaForm.salvarPergunta')}
         </button>
-        <button type="button" onClick={onClose} className="text-sm text-accent-700 underline">
+        <button
+          type="button"
+          onClick={onClose}
+          className="bg-bg border border-divider font-heading rounded-full px-4 py-2 text-sm"
+        >
           {t('comum.fechar')}
         </button>
       </div>

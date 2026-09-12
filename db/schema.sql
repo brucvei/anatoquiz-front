@@ -106,7 +106,7 @@ create table alternativa (
 create table tentativa_resposta (
     id                  uuid primary key default gen_random_uuid(),
     usuario_id          uuid not null references perfil(id),
-    quiz_id             uuid not null references quiz(id),   -- facilita rankings por quiz
+    quiz_id             uuid not null references quiz(id) on delete cascade,   -- facilita rankings por quiz
     pergunta_id         uuid not null references pergunta(id),
     alternativa_id      uuid references alternativa(id),
     modo                varchar(10) not null check (modo in ('multipla', 'livre')),
@@ -121,7 +121,7 @@ create table tentativa_resposta (
 create table pontuacao_quiz (
     id              uuid primary key default gen_random_uuid(),
     usuario_id      uuid not null references perfil(id),
-    quiz_id         uuid not null references quiz(id),
+    quiz_id         uuid not null references quiz(id) on delete cascade,
     pontos_total    integer not null default 0,
     atualizado_em   timestamp not null default now(),
     unique (usuario_id, quiz_id)

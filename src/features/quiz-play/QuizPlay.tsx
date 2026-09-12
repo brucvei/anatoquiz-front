@@ -155,7 +155,7 @@ export function QuizPlay() {
                 type="button"
                 onClick={() => setIndiceAtual((i) => Math.max(0, i - 1))}
                 disabled={indiceAtual === 0}
-                className="text-sm text-accent-700 font-semibold underline disabled:opacity-30 disabled:no-underline"
+                className="bg-bg border border-divider font-heading rounded-full px-4 py-2 text-sm disabled:opacity-30"
               >
                 {t('quizPlay.anterior')}
               </button>

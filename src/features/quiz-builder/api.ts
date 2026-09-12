@@ -7,6 +7,7 @@ import type {
   EstruturaAnatomica,
   Hotspot,
   HotspotInsert,
+  HotspotUpdate,
   ImagemVista,
   PecaAnatomica,
   Pergunta,
@@ -257,6 +258,12 @@ export async function findOrCreateEstrutura(nome: string): Promise<EstruturaAnat
 
 export async function createHotspot(input: HotspotInsert) {
   const { data, error } = await supabase.from('hotspot').insert(input).select().single();
+  if (error) throw error;
+  return data as Hotspot;
+}
+
+export async function updateHotspot(id: string, input: HotspotUpdate) {
+  const { data, error } = await supabase.from('hotspot').update(input).eq('id', id).select().single();
   if (error) throw error;
   return data as Hotspot;
 }

@@ -2,7 +2,15 @@ import { Fragment, useEffect, useRef, useState, type MouseEvent, type ReactNode 
 import type { EstruturaAnatomica, Hotspot, TipoHotspot } from '../../types/database';
 import { Loading } from '../../components/Loading';
 import { useI18n } from '../../i18n';
-import { createHotspot, deleteHotspot, findOrCreateEstrutura, getImagemUrl, listEstruturas, listHotspots } from './api';
+import {
+  createHotspot,
+  deleteHotspot,
+  findOrCreateEstrutura,
+  getImagemUrl,
+  listEstruturas,
+  listHotspots,
+  updateHotspot,
+} from './api';
 
 interface Pendente {
   tipo: TipoHotspot;
@@ -11,6 +19,16 @@ interface Pendente {
   largura?: number;
   altura?: number;
 }
+
+interface ArrastandoHotspot {
+  id: string;
+  origX: number;
+  origY: number;
+  x: number;
+  y: number;
+}
+
+const LIMIAR_MOVIMENTO = 0.004;
 
 interface HotspotPanelProps {
   vistaId: string;
@@ -33,6 +51,7 @@ export function HotspotPanel({ vistaId, storagePath, titulo, renderPainelLateral
   const [erro, setErro] = useState<string | null>(null);
   const [salvando, setSalvando] = useState(false);
   const [hotspotSelecionado, setHotspotSelecionado] = useState<string | null>(null);
+  const [arrastandoHotspot, setArrastandoHotspot] = useState<ArrastandoHotspot | null>(null);
 
   function erroMensagem(err: unknown): string {
     if (err && typeof err === 'object' && 'message' in err) return String((err as { message: unknown }).message);
@@ -60,11 +79,35 @@ export function HotspotPanel({ vistaId, storagePath, titulo, renderPainelLateral
   }
 
   function handleMouseDown(e: MouseEvent) {
-    if (modo !== 'regiao' || pendente) return;
+    if (modo !== 'regiao' || pendente || arrastandoHotspot) return;
     setArrastando(relativePos(e));
   }
 
-  function handleMouseUp(e: MouseEvent) {
+  function handleMouseMove(e: MouseEvent) {
+    if (!arrastandoHotspot) return;
+    const { x, y } = relativePos(e);
+    setArrastandoHotspot((prev) => (prev ? { ...prev, x, y } : prev));
+  }
+
+  async function handleMouseUp(e: MouseEvent) {
+    if (arrastandoHotspot) {
+      const solto = arrastandoHotspot;
+      setArrastandoHotspot(null);
+      const moveu =
+        Math.abs(solto.x - solto.origX) > LIMIAR_MOVIMENTO || Math.abs(solto.y - solto.origY) > LIMIAR_MOVIMENTO;
+      if (!moveu) {
+        setHotspotSelecionado(solto.id);
+        return;
+      }
+      setHotspots((prev) => prev.map((h) => (h.id === solto.id ? { ...h, coord_x: solto.x, coord_y: solto.y } : h)));
+      try {
+        await updateHotspot(solto.id, { coord_x: solto.x, coord_y: solto.y });
+      } catch (err) {
+        setErro(erroMensagem(err));
+      }
+      return;
+    }
+
     if (modo !== 'regiao' || !arrastando) return;
     const fim = relativePos(e);
     const x = Math.min(arrastando.x, fim.x);
@@ -74,6 +117,12 @@ export function HotspotPanel({ vistaId, storagePath, titulo, renderPainelLateral
     setArrastando(null);
     if (largura < 0.02 || altura < 0.02) return;
     setPendente({ tipo: 'regiao', coord_x: x, coord_y: y, largura, altura });
+  }
+
+  function handleMarcadorMouseDown(e: MouseEvent, h: Hotspot) {
+    e.stopPropagation();
+    if (pendente) return;
+    setArrastandoHotspot({ id: h.id, origX: h.coord_x, origY: h.coord_y, x: h.coord_x, y: h.coord_y });
   }
 
   async function handleSalvar() {
@@ -148,53 +197,51 @@ export function HotspotPanel({ vistaId, storagePath, titulo, renderPainelLateral
         ref={imgRef}
         onClick={handleClick}
         onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseUp}
         className="relative w-full aspect-[4/3] bg-neutral-200 rounded-lg overflow-hidden cursor-crosshair select-none border-2 border-dashed border-neutral-400"
       >
         <img src={imageUrl} alt="" className="w-full h-full object-contain pointer-events-none" />
 
-        {hotspots.map((h) => (
-          <Fragment key={h.id}>
-            {h.tipo === 'ponto' ? (
+        {hotspots.map((h) => {
+          const emArrasto = arrastandoHotspot?.id === h.id;
+          const cx = emArrasto ? arrastandoHotspot!.x : h.coord_x;
+          const cy = emArrasto ? arrastandoHotspot!.y : h.coord_y;
+          return (
+            <Fragment key={h.id}>
+              {h.tipo === 'ponto' ? (
+                <div
+                  onMouseDown={(e) => handleMarcadorMouseDown(e, h)}
+                  onClick={(e) => e.stopPropagation()}
+                  className="absolute w-4 h-4 -ml-2 -mt-2 rounded-full border-2 border-accent bg-accent/30 cursor-grab active:cursor-grabbing hover:bg-accent/60"
+                  style={{ left: `${cx * 100}%`, top: `${cy * 100}%` }}
+                />
+              ) : (
+                <div
+                  onMouseDown={(e) => handleMarcadorMouseDown(e, h)}
+                  onClick={(e) => e.stopPropagation()}
+                  className="absolute rounded-full border-2 border-accent-2-600 bg-accent-2-600/20 cursor-grab active:cursor-grabbing hover:bg-accent-2-600/40"
+                  style={{
+                    left: `${cx * 100}%`,
+                    top: `${cy * 100}%`,
+                    width: `${(h.largura ?? 0) * 100}%`,
+                    height: `${(h.altura ?? 0) * 100}%`,
+                  }}
+                />
+              )}
               <div
-                onMouseDown={(e) => e.stopPropagation()}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setHotspotSelecionado(h.id);
-                }}
-                className="absolute w-4 h-4 -ml-2 -mt-2 rounded-full border-2 border-accent bg-accent/30 cursor-pointer hover:bg-accent/60"
-                style={{ left: `${h.coord_x * 100}%`, top: `${h.coord_y * 100}%` }}
-              />
-            ) : (
-              <div
-                onMouseDown={(e) => e.stopPropagation()}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setHotspotSelecionado(h.id);
-                }}
-                className="absolute rounded-full border-2 border-accent-2-600 bg-accent-2-600/20 cursor-pointer hover:bg-accent-2-600/40"
-                style={{
-                  left: `${h.coord_x * 100}%`,
-                  top: `${h.coord_y * 100}%`,
-                  width: `${(h.largura ?? 0) * 100}%`,
-                  height: `${(h.altura ?? 0) * 100}%`,
-                }}
-              />
-            )}
-            <div
-              onClick={(e) => {
-                e.stopPropagation();
-                setHotspotSelecionado(h.id);
-              }}
-              className={`absolute -translate-x-1/2 -translate-y-full text-xs font-heading px-2.5 py-0.5 rounded-full whitespace-nowrap cursor-pointer ${
-                h.tipo === 'regiao' ? 'bg-accent-2-600 text-bg' : 'bg-accent text-bg'
-              }`}
-              style={{ left: `${h.coord_x * 100}%`, top: `${h.coord_y * 100 - 3}%` }}
-            >
-              {nomeDaEstrutura(h.estrutura_id)}
-            </div>
-          </Fragment>
-        ))}
+                onMouseDown={(e) => handleMarcadorMouseDown(e, h)}
+                className={`absolute -translate-x-1/2 -translate-y-full text-xs font-heading px-2.5 py-0.5 rounded-full whitespace-nowrap cursor-grab active:cursor-grabbing ${
+                  h.tipo === 'regiao' ? 'bg-accent-2-600 text-bg' : 'bg-accent text-bg'
+                }`}
+                style={{ left: `${cx * 100}%`, top: `${cy * 100 - 3}%` }}
+              >
+                {nomeDaEstrutura(h.estrutura_id)}
+              </div>
+            </Fragment>
+          );
+        })}
 
         {pendente && pendente.tipo === 'ponto' && (
           <div
@@ -247,7 +294,7 @@ export function HotspotPanel({ vistaId, storagePath, titulo, renderPainelLateral
                 setPendente(null);
                 setNomeEstrutura('');
               }}
-              className="text-sm text-accent-700 underline"
+              className="bg-bg border border-divider font-heading rounded-full px-4 py-2 text-sm"
             >
               {t('comum.cancelar')}
             </button>

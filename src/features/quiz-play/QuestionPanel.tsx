@@ -105,7 +105,7 @@ export function QuestionPanel({ hotspotId, sessaoId, resultadoExistente, onRespo
               type="button"
               onClick={() => setFase('multipla')}
               disabled={respondendo}
-              className="text-sm text-accent-700 underline"
+              className="bg-bg border border-divider font-heading rounded-full px-4 py-2 text-sm disabled:opacity-50"
             >
               {t('questionModal.pular')}
             </button>

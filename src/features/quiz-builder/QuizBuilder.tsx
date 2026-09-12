@@ -219,7 +219,7 @@ export function QuizBuilder() {
               type="button"
               onClick={handleDeleteQuiz}
               disabled={loading}
-              className="text-accent-700 text-xs underline self-center"
+              className="bg-bg border border-divider font-heading rounded-full px-3 py-1.5 text-xs self-center"
             >
               {t('quizForm.excluirQuiz')}
             </button>
@@ -254,7 +254,7 @@ export function QuizBuilder() {
                         handleExcluirPeca(p.id);
                       }}
                       disabled={excluindoPecaId === p.id}
-                      className="text-accent-700 text-xs underline disabled:opacity-50 flex-none ml-2"
+                      className="bg-bg border border-divider font-heading rounded-full px-3 py-1 text-xs disabled:opacity-50 flex-none ml-2"
                     >
                       {excluindoPecaId === p.id ? t('myQuizzes.excluindo') : t('quizForm.excluirPeca')}
                     </button>

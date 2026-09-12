@@ -161,7 +161,10 @@ export function QuizResult() {
         </div>
       )}
 
-      <Link to={`/quiz/${id}/ranking`} className="block text-center text-sm text-accent-700 font-semibold underline mb-6">
+      <Link
+        to={`/quiz/${id}/ranking`}
+        className="block text-center bg-bg border border-divider font-heading rounded-full px-4 py-2 text-sm mb-6"
+      >
         {t('ranking.verDoQuiz')}
       </Link>
 

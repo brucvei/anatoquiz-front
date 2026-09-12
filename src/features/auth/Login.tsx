@@ -59,7 +59,10 @@ export function Login() {
         {loading ? t('auth.login.entrando') : t('auth.login.entrar')}
       </button>
 
-      <Link to="/cadastro" className="text-sm text-accent font-semibold underline text-center">
+      <Link
+        to="/cadastro"
+        className="bg-bg border border-divider font-heading rounded-full px-4 py-2 text-sm text-center"
+      >
         {t('auth.login.criarConta')}
       </Link>
     </form>

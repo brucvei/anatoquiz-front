@@ -1,23 +1,23 @@
 import { useState, type FormEvent } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabaseClient';
 import { useI18n } from '../../i18n';
 
 export function SignUp() {
   const { t } = useI18n();
+  const navigate = useNavigate();
   const [nome, setNome] = useState('');
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
   const [erro, setErro] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [sucesso, setSucesso] = useState(false);
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     setErro(null);
     setLoading(true);
 
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password: senha,
       options: { data: { nome } },
@@ -30,18 +30,7 @@ export function SignUp() {
       return;
     }
 
-    setSucesso(true);
-  }
-
-  if (sucesso) {
-    return (
-      <div className="max-w-sm mx-auto mt-16 p-8 text-center bg-surface rounded-lg shadow-lg">
-        <p>{t('auth.cadastro.sucesso')}</p>
-        <Link to="/login" className="text-accent font-semibold underline mt-4 inline-block">
-          {t('auth.cadastro.irLogin')}
-        </Link>
-      </div>
-    );
+    navigate(data.session ? '/buscar' : '/login');
   }
 
   return (
@@ -84,7 +73,10 @@ export function SignUp() {
         {loading ? t('auth.cadastro.cadastrando') : t('auth.cadastro.cadastrar')}
       </button>
 
-      <Link to="/login" className="text-sm text-accent font-semibold underline text-center">
+      <Link
+        to="/login"
+        className="bg-bg border border-divider font-heading rounded-full px-4 py-2 text-sm text-center"
+      >
         {t('auth.cadastro.jaTenhoConta')}
       </Link>
     </form>
