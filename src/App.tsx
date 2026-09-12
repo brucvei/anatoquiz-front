@@ -1,6 +1,7 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { AuthProvider } from './hooks/useAuth';
 import { I18nProvider } from './i18n';
+import { ConfirmProvider } from './components/ConfirmProvider';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { Header } from './components/Header';
 import { Login } from './features/auth/Login';
@@ -16,6 +17,7 @@ import { Ranking } from './features/ranking/Ranking';
 function App() {
   return (
     <I18nProvider>
+      <ConfirmProvider>
       <AuthProvider>
       <BrowserRouter>
         <Header />
@@ -98,6 +100,7 @@ function App() {
         </Routes>
       </BrowserRouter>
       </AuthProvider>
+      </ConfirmProvider>
     </I18nProvider>
   );
 }

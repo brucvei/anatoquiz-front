@@ -1,5 +1,6 @@
 import { Fragment, useEffect, useRef, useState, type MouseEvent, type ReactNode } from 'react';
 import type { EstruturaAnatomica, Hotspot, TipoHotspot } from '../../types/database';
+import { useConfirm } from '../../components/ConfirmProvider';
 import { Loading } from '../../components/Loading';
 import { useI18n } from '../../i18n';
 import {
@@ -39,6 +40,7 @@ interface HotspotPanelProps {
 
 export function HotspotPanel({ vistaId, storagePath, titulo, renderPainelLateral }: HotspotPanelProps) {
   const { t } = useI18n();
+  const confirm = useConfirm();
   const imgRef = useRef<HTMLDivElement>(null);
 
   const [imageUrl, setImageUrl] = useState<string | null>(null);
@@ -157,7 +159,7 @@ export function HotspotPanel({ vistaId, storagePath, titulo, renderPainelLateral
   }
 
   async function handleExcluirHotspot(id: string) {
-    if (!window.confirm(t('hotspotEditor.confirmarExcluirHotspot'))) return;
+    if (!(await confirm(t('hotspotEditor.confirmarExcluirHotspot')))) return;
     await deleteHotspot(id);
     setHotspots((prev) => prev.filter((h) => h.id !== id));
     setHotspotSelecionado(null);

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { useConfirm } from '../../components/ConfirmProvider';
 import { Loading } from '../../components/Loading';
 import { useAuth } from '../../hooks/useAuth';
 import { useI18n } from '../../i18n';
@@ -23,6 +24,7 @@ export function QuizBuilder() {
   const { id: idDaUrl } = useParams();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const confirm = useConfirm();
 
   const [quizId, setQuizId] = useState<string | null>(idDaUrl ?? null);
   const [titulo, setTitulo] = useState('');
@@ -113,7 +115,7 @@ export function QuizBuilder() {
 
   async function handleDeleteQuiz() {
     if (!quizId) return;
-    if (!window.confirm(t('quizForm.confirmarExcluirQuiz'))) return;
+    if (!(await confirm(t('quizForm.confirmarExcluirQuiz')))) return;
     setLoading(true);
     try {
       await deleteQuiz(quizId);
@@ -143,7 +145,7 @@ export function QuizBuilder() {
   }
 
   async function handleExcluirPeca(pecaId: string) {
-    if (!window.confirm(t('quizForm.confirmarExcluirPeca'))) return;
+    if (!(await confirm(t('quizForm.confirmarExcluirPeca')))) return;
     setExcluindoPecaId(pecaId);
     try {
       await deletePeca(pecaId);

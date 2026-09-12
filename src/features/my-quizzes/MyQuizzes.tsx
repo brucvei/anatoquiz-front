@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useConfirm } from '../../components/ConfirmProvider';
 import { Loading } from '../../components/Loading';
 import { useAuth } from '../../hooks/useAuth';
 import { useI18n } from '../../i18n';
@@ -9,6 +10,7 @@ import type { Quiz } from '../../types/database';
 export function MyQuizzes() {
   const { t } = useI18n();
   const { user } = useAuth();
+  const confirm = useConfirm();
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
   const [pagina, setPagina] = useState(0);
   const [temMais, setTemMais] = useState(false);
@@ -36,7 +38,7 @@ export function MyQuizzes() {
   }
 
   async function handleExcluir(id: string) {
-    if (!window.confirm(t('myQuizzes.confirmarExcluir'))) return;
+    if (!(await confirm(t('myQuizzes.confirmarExcluir')))) return;
     setExcluindoId(id);
     try {
       await deleteQuiz(id);
