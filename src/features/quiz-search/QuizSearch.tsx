@@ -52,7 +52,6 @@ export function QuizSearch() {
   return (
     <div className="w-full p-8">
       <h1 className="text-2xl mb-1">{t('quizSearch.titulo')}</h1>
-      <p className="text-sm text-accent-700/70 mb-6 max-w-md">{t('quizSearch.subtitulo')}</p>
 
       <div className="flex gap-2 mb-4">
         <input
