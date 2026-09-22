@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
-import type { Angulo, ImagemVista, PecaAnatomica } from '../../types/database';
+import type { Angulo, ImagemVista, PecaAnatomica } from '../../types/database.ts';
 import { useI18n } from '../../i18n';
-import { createVista, listVistas } from './api';
-import { HotspotPanel } from './HotspotPanel';
-import { ImageUpload } from './ImageUpload';
-import { PerguntaForm } from './PerguntaForm';
+import { createVista, listVistas } from './api.ts';
+import { HotspotPanel } from './HotspotPanel.tsx';
+import { ImageUpload } from './ImageUpload.tsx';
+import { PerguntaForm } from './PerguntaForm.tsx';
 
 const ANGULOS: Angulo[] = ['anterior', 'posterior', 'lateral_direita', 'lateral_esquerda', 'dorsal', 'ventral'];
 

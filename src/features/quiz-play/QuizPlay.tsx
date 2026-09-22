@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import type { CorrigirRespostaResult, Hotspot, ImagemVista, PecaAnatomica, Quiz } from '../../types/database';
-import { Loading } from '../../components/Loading';
+import type { CorrigirRespostaResult, Hotspot, ImagemVista, PecaAnatomica, Quiz } from '../../types/database.ts';
+import { Loading } from '../../components/Loading.tsx';
 import { useI18n } from '../../i18n';
-import { getQuiz, getSistemaDaPeca, listPecas, listVistas } from '../quiz-builder/api';
-import { listHotspotsDaPeca } from './api';
-import { PecaViewer } from './PecaViewer';
-import { QuestionPanel } from './QuestionPanel';
+import { getQuiz, getSistemaDaPeca, listPecas, listVistas } from '../quiz-builder/api.ts';
+import { listHotspotsDaPeca } from './api.ts';
+import { PecaViewer } from './PecaViewer.tsx';
+import { QuestionPanel } from './QuestionPanel.tsx';
 
 export function QuizPlay() {
   const { t } = useI18n();

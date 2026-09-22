@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useConfirm } from '../../components/ConfirmProvider';
-import { Loading } from '../../components/Loading';
-import { useAuth } from '../../hooks/useAuth';
+import { useConfirm } from '../../components/ConfirmProvider.tsx';
+import { Loading } from '../../components/Loading.tsx';
+import { useAuth } from '../../hooks/useAuth.tsx';
 import { useI18n } from '../../i18n';
-import { TAMANHO_PAGINA, deleteQuiz, listMeusQuizzes } from '../quiz-builder/api';
-import type { Quiz } from '../../types/database';
+import { TAMANHO_PAGINA, deleteQuiz, listMeusQuizzes } from '../quiz-builder/api.ts';
+import type { Quiz } from '../../types/database.ts';
 
 export function MyQuizzes() {
   const { t } = useI18n();

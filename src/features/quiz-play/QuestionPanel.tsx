@@ -1,8 +1,8 @@
 import { useEffect, useState, type FormEvent } from 'react';
-import type { CorrigirRespostaResult, Pergunta } from '../../types/database';
-import { Loading } from '../../components/Loading';
+import type { CorrigirRespostaResult, Pergunta } from '../../types/database.ts';
+import { Loading } from '../../components/Loading.tsx';
 import { useI18n } from '../../i18n';
-import { corrigirResposta, getPerguntaDoHotspot, listAlternativasJogo } from './api';
+import { corrigirResposta, getPerguntaDoHotspot, listAlternativasJogo } from './api.ts';
 
 interface QuestionPanelProps {
   hotspotId: string;
@@ -115,7 +115,11 @@ export function QuestionPanel({ hotspotId, sessaoId, resultadoExistente, onRespo
 
       {!resultado && fase === 'multipla' && (
         <>
-          {erroLivre && <p className="text-xs text-accent-700/70 mb-2">{t('questionModal.naoFoiEssa')}</p>}
+          {erroLivre && (
+            <div className="mb-3 p-3 rounded-md text-sm border-2 bg-accent-200 border-accent-700 text-accent-900">
+              {t('questionModal.naoFoiEssa')}
+            </div>
+          )}
           <div className="flex flex-col gap-2">
             {alternativas.map((a, i) => (
               <button
@@ -176,7 +180,9 @@ export function QuestionPanel({ hotspotId, sessaoId, resultadoExistente, onRespo
         >
           <p className="font-heading text-base">
             {resultado.acertou
-              ? t('questionModal.acertou', { pontos: resultado.pontos })
+              ? fase === 'livre'
+                ? t('questionModal.acertou', { pontos: resultado.pontos })
+                : t('questionModal.acertouAlternativa', { pontos: resultado.pontos })
               : t('questionModal.naoFoiDessaVez')}
           </p>
           {!resultado.acertou && (

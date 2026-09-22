@@ -1,6 +1,6 @@
 import { useState, type ChangeEvent } from 'react';
 import { useI18n } from '../../i18n';
-import { uploadImagemPeca } from './api';
+import { uploadImagemPeca } from './api.ts';
 
 const TAMANHO_MAXIMO = 5 * 1024 * 1024; // 5MB
 

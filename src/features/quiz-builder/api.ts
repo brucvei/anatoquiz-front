@@ -1,4 +1,4 @@
-import { supabase } from '../../lib/supabaseClient';
+import { supabase } from '../../lib/supabaseClient.ts';
 import type {
   Alternativa,
   AlternativaInsert,
@@ -16,7 +16,7 @@ import type {
   QuizInsert,
   QuizUpdate,
   SistemaAnatomico,
-} from '../../types/database';
+} from '../../types/database.ts';
 
 export const TAMANHO_PAGINA = 10;
 

@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import type { Quiz, SistemaAnatomico } from '../../types/database';
+import type { Quiz, SistemaAnatomico } from '../../types/database.ts';
 import { useI18n } from '../../i18n';
-import { TAMANHO_PAGINA, buscarQuizzesPublicos, getInfoCardQuiz, listSistemas, type QuizCardInfo } from '../quiz-builder/api';
+import { TAMANHO_PAGINA, buscarQuizzesPublicos, getInfoCardQuiz, listSistemas, type QuizCardInfo } from '../quiz-builder/api.ts';
 
 type QuizComInfo = Quiz & { info?: QuizCardInfo };
 

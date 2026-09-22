@@ -1,7 +1,7 @@
 import { Fragment, useEffect, useRef, useState, type MouseEvent, type ReactNode } from 'react';
-import type { EstruturaAnatomica, Hotspot, TipoHotspot } from '../../types/database';
-import { useConfirm } from '../../components/ConfirmProvider';
-import { Loading } from '../../components/Loading';
+import type { EstruturaAnatomica, Hotspot, TipoHotspot } from '../../types/database.ts';
+import { useConfirm } from '../../components/ConfirmProvider.tsx';
+import { Loading } from '../../components/Loading.tsx';
 import { useI18n } from '../../i18n';
 import {
   createHotspot,
@@ -11,7 +11,7 @@ import {
   listEstruturas,
   listHotspots,
   updateHotspot,
-} from './api';
+} from './api.ts';
 
 interface Pendente {
   tipo: TipoHotspot;
@@ -234,6 +234,7 @@ export function HotspotPanel({ vistaId, storagePath, titulo, renderPainelLateral
               )}
               <div
                 onMouseDown={(e) => handleMarcadorMouseDown(e, h)}
+                onClick={(e) => e.stopPropagation()}
                 className={`absolute -translate-x-1/2 -translate-y-full text-xs font-heading px-2.5 py-0.5 rounded-full whitespace-nowrap cursor-grab active:cursor-grabbing ${
                   h.tipo === 'regiao' ? 'bg-accent-2-600 text-bg' : 'bg-accent text-bg'
                 }`}

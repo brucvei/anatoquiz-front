@@ -1,4 +1,4 @@
-import { supabase } from '../../lib/supabaseClient';
+import { supabase } from '../../lib/supabaseClient.ts';
 
 export interface RankingItem {
   usuario_id: string;

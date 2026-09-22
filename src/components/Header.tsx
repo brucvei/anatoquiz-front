@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
-import { supabase } from '../lib/supabaseClient';
-import { useAuth } from '../hooks/useAuth';
+import { supabase } from '../lib/supabaseClient.ts';
+import { useAuth } from '../hooks/useAuth.tsx';
 import { useI18n } from '../i18n';
 
 export function Header() {

@@ -1,18 +1,18 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
-import { AuthProvider } from './hooks/useAuth';
+import { AuthProvider } from './hooks/useAuth.tsx';
 import { I18nProvider } from './i18n';
-import { ConfirmProvider } from './components/ConfirmProvider';
-import { ProtectedRoute } from './components/ProtectedRoute';
-import { Header } from './components/Header';
-import { Login } from './features/auth/Login';
-import { SignUp } from './features/auth/SignUp';
-import { QuizSearch } from './features/quiz-search/QuizSearch';
-import { MyQuizzes } from './features/my-quizzes/MyQuizzes';
-import { History } from './features/my-quizzes/History';
-import { QuizBuilder } from './features/quiz-builder/QuizBuilder';
-import { QuizPlay } from './features/quiz-play/QuizPlay';
-import { QuizResult } from './features/quiz-result/QuizResult';
-import { Ranking } from './features/ranking/Ranking';
+import { ConfirmProvider } from './components/ConfirmProvider.tsx';
+import { ProtectedRoute } from './components/ProtectedRoute.tsx';
+import { Header } from './components/Header.tsx';
+import { Login } from './features/auth/Login.tsx';
+import { SignUp } from './features/auth/SignUp.tsx';
+import { QuizSearch } from './features/quiz-search/QuizSearch.tsx';
+import { MyQuizzes } from './features/my-quizzes/MyQuizzes.tsx';
+import { History } from './features/my-quizzes/History.tsx';
+import { QuizBuilder } from './features/quiz-builder/QuizBuilder.tsx';
+import { QuizPlay } from './features/quiz-play/QuizPlay.tsx';
+import { QuizResult } from './features/quiz-result/QuizResult.tsx';
+import { Ranking } from './features/ranking/Ranking.tsx';
 
 function App() {
   return (
@@ -96,7 +96,7 @@ function App() {
               </ProtectedRoute>
             }
           />
-          <Route path="/" element={<Navigate to="/buscar" replace />} />
+          <Route path="*" element={<Navigate to="/buscar" replace />} />
         </Routes>
       </BrowserRouter>
       </AuthProvider>

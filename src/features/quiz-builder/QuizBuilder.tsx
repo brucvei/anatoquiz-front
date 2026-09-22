@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useConfirm } from '../../components/ConfirmProvider';
-import { Loading } from '../../components/Loading';
-import { useAuth } from '../../hooks/useAuth';
+import { useConfirm } from '../../components/ConfirmProvider.tsx';
+import { Loading } from '../../components/Loading.tsx';
+import { useAuth } from '../../hooks/useAuth.tsx';
 import { useI18n } from '../../i18n';
-import type { PecaAnatomica, SistemaAnatomico } from '../../types/database';
+import type { PecaAnatomica, SistemaAnatomico } from '../../types/database.ts';
 import {
   contarVistas,
   createPeca,
@@ -16,8 +16,8 @@ import {
   listPecas,
   listSistemas,
   updateQuiz,
-} from './api';
-import { PecaEditor } from './PecaEditor';
+} from './api.ts';
+import { PecaEditor } from './PecaEditor.tsx';
 
 export function QuizBuilder() {
   const { t } = useI18n();

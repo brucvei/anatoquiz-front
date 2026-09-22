@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Loading } from '../../components/Loading';
-import { useAuth } from '../../hooks/useAuth';
+import { Loading } from '../../components/Loading.tsx';
+import { useAuth } from '../../hooks/useAuth.tsx';
 import { useI18n } from '../../i18n';
-import { getQuiz } from '../quiz-builder/api';
-import { listRankingGeral, type RankingItem } from './api';
+import { getQuiz } from '../quiz-builder/api.ts';
+import { listRankingGeral, type RankingItem } from './api.ts';
 
 export function Ranking() {
   const { t } = useI18n();

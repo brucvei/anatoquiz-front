@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Loading } from '../../components/Loading';
+import { Loading } from '../../components/Loading.tsx';
 import { useI18n } from '../../i18n';
 import {
   createAlternativa,
@@ -8,7 +8,7 @@ import {
   listAlternativas,
   updateAlternativa,
   updatePergunta,
-} from './api';
+} from './api.ts';
 
 interface AlternativaCampo {
   id: string | null;

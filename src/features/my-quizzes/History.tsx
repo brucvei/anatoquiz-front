@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Loading } from '../../components/Loading';
-import { useAuth } from '../../hooks/useAuth';
+import { Loading } from '../../components/Loading.tsx';
+import { useAuth } from '../../hooks/useAuth.tsx';
 import { useI18n } from '../../i18n';
-import { TAMANHO_PAGINA, listMeuHistorico, type HistoricoItem } from '../quiz-play/api';
+import { TAMANHO_PAGINA, listMeuHistorico, type HistoricoItem } from '../quiz-play/api.ts';
 
 export function History() {
   const { t, idioma } = useI18n();

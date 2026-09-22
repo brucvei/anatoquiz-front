@@ -1,5 +1,5 @@
-import { supabase } from '../../lib/supabaseClient';
-import type { CorrigirRespostaResult, Hotspot, Modo, Pergunta, PontuacaoQuiz, TentativaResposta } from '../../types/database';
+import { supabase } from '../../lib/supabaseClient.ts';
+import type { CorrigirRespostaResult, Hotspot, Modo, Pergunta, PontuacaoQuiz, TentativaResposta } from '../../types/database.ts';
 
 export const TAMANHO_PAGINA = 10;
 

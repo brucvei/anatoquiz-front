@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
-import type { Hotspot, ImagemVista } from '../../types/database';
+import type { Hotspot, ImagemVista } from '../../types/database.ts';
 import { useI18n } from '../../i18n';
-import { getImagemUrl } from '../quiz-builder/api';
+import { getImagemUrl } from '../quiz-builder/api.ts';
 
 interface PecaViewerProps {
   vistas: ImagemVista[];
@@ -37,7 +37,7 @@ export function PecaViewer({
 
   return (
     <div>
-      <div className="relative w-full aspect-[4/3] bg-neutral-200 rounded-lg overflow-hidden">
+      <div className="relative w-full aspect-[4/3] md:w-auto md:h-[55vh] md:max-h-[520px] md:max-w-full mx-auto bg-neutral-200 rounded-lg overflow-hidden">
         {imageUrl && (
           <img
             src={imageUrl}

@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
 import { Link, useLocation, useParams } from 'react-router-dom';
-import { Loading } from '../../components/Loading';
-import { useAuth } from '../../hooks/useAuth';
-import type { Quiz } from '../../types/database';
+import { Loading } from '../../components/Loading.tsx';
+import { useAuth } from '../../hooks/useAuth.tsx';
+import type { Quiz } from '../../types/database.ts';
 import { useI18n } from '../../i18n';
-import { getQuiz } from '../quiz-builder/api';
-import { listMinhasTentativasComEstrutura, type TentativaComEstrutura } from '../quiz-play/api';
+import { getQuiz } from '../quiz-builder/api.ts';
+import { listMinhasTentativasComEstrutura, type TentativaComEstrutura } from '../quiz-play/api.ts';
 
 interface Sessao {
   chave: string;
@@ -16,6 +16,17 @@ interface Sessao {
   pontos: number;
 }
 
+// Errar a resposta livre e depois acertar na alternativa gera 2 tentativas da mesma pergunta: mostra 1 linha só.
+function unirPorPergunta(tents: TentativaComEstrutura[]): TentativaComEstrutura[] {
+  const porPergunta = new Map<string, TentativaComEstrutura>();
+  for (const t of tents) {
+    const atual = porPergunta.get(t.pergunta_id);
+    const pontos = (atual?.pontos ?? 0) + t.pontos;
+    porPergunta.set(t.pergunta_id, { ...(atual?.acertou && !t.acertou ? atual : t), pontos });
+  }
+  return Array.from(porPergunta.values());
+}
+
 function agruparPorSessao(tentativas: TentativaComEstrutura[]): Sessao[] {
   const grupos = new Map<string, TentativaComEstrutura[]>();
   for (const t of tentativas) {
@@ -23,7 +34,8 @@ function agruparPorSessao(tentativas: TentativaComEstrutura[]): Sessao[] {
     grupos.set(chave, [...(grupos.get(chave) ?? []), t]);
   }
   return Array.from(grupos.entries())
-    .map(([chave, itens]) => ({
+    .map(([chave, tents]) => ({ chave, itens: unirPorPergunta(tents) }))
+    .map(({ chave, itens }) => ({
       chave,
       itens,
       data: itens[0].respondido_em,
@@ -53,7 +65,7 @@ function ListaRevisao({ itens, t }: { itens: TentativaComEstrutura[]; t: (k: str
             <div className="font-semibold">{t2.estruturaNome}</div>
             <div className="text-xs opacity-70">
               {t2.vistaAngulo && `${t('quizPlay.vistaTag', { angulo: t(`angulo.${t2.vistaAngulo}`) })} · `}
-              {t2.modo === 'livre' ? t('quizResult.respostaLivre') : t('quizResult.multiplaEscolha')}
+              {!t2.acertou ? t('quizResult.errou') : t2.modo === 'livre' ? t('quizResult.acertouPrimeira') : t('quizResult.acertouAlternativa')}
             </div>
           </div>
           <span className="text-sm font-bold">{t2.acertou ? `+${t2.pontos}` : '0'} pts</span>
