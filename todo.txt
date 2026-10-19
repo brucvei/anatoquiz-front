@@ -1,0 +1,2 @@
+remover textos tipo "A correção roda no servidor: o cliente não sabe qual é a resposta certa antes de você responder."
+melhorar as telas de carregamento onde fica só o texto "carregando..."

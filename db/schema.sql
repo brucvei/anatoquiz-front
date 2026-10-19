@@ -6,6 +6,22 @@
 
 create extension if not exists "pgcrypto";
 create extension if not exists "pg_trgm";  -- fuzzy match simples no modo livre (RPC corrigir_resposta)
+create extension if not exists "unaccent"; -- normalização de nomes de sistema/estrutura
+
+-- nome_normalizado = minúsculas, sem acento, sem espaços extras (evita "osso" / "Ósseo " duplicados)
+create function public.normalizar_nome(p text)
+returns text language sql immutable set search_path = public, extensions as $
+  select lower(regexp_replace(trim(unaccent(p)), '\s+', ' ', 'g'));
+$;
+
+create function public.set_nome_normalizado()
+returns trigger language plpgsql set search_path = public, extensions as $
+begin
+  new.nome := regexp_replace(trim(new.nome), '\s+', ' ', 'g');
+  new.nome_normalizado := public.normalizar_nome(new.nome);
+  return new;
+end;
+$;
 
 -- =========================================================
 -- 1. PERFIL (estende auth.users do Supabase)
@@ -39,14 +55,18 @@ create table quiz (
     titulo          varchar(150) not null,
     descricao       text,
     publico         boolean not null default true,   -- controla se aparece na busca
+    idioma          varchar(5) not null default 'pt-BR' check (idioma in ('pt-BR', 'es')),  -- filtro "Idioma do quiz"
     criado_em       timestamp not null default now()
 );
 
 create table sistema_anatomico (
     id              uuid primary key default gen_random_uuid(),
     nome            varchar(100) not null,   -- ex: Esquelético, Muscular, Digestório
+    nome_normalizado text not null unique,   -- preenchido por trigger (ver set_nome_normalizado)
     descricao       text
 );
+create trigger trg_sistema_nome_normalizado before insert or update of nome on sistema_anatomico
+  for each row execute function public.set_nome_normalizado();
 
 -- peça agora pertence a um quiz específico (o autor monta o conteúdo do próprio quiz)
 create table peca_anatomica (
@@ -69,8 +89,11 @@ create table estrutura_anatomica (
     id              uuid primary key default gen_random_uuid(),
     sistema_id      uuid references sistema_anatomico(id),
     nome            varchar(150) not null,
+    nome_normalizado text not null unique,   -- preenchido por trigger (ver set_nome_normalizado)
     descricao       text
 );
+create trigger trg_estrutura_nome_normalizado before insert or update of nome on estrutura_anatomica
+  for each row execute function public.set_nome_normalizado();
 
 create table hotspot (
     id              uuid primary key default gen_random_uuid(),

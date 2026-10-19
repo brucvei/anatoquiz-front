@@ -16,7 +16,6 @@ interface Sessao {
   pontos: number;
 }
 
-// Errar a resposta livre e depois acertar na alternativa gera 2 tentativas da mesma pergunta: mostra 1 linha só.
 function unirPorPergunta(tents: TentativaComEstrutura[]): TentativaComEstrutura[] {
   const porPergunta = new Map<string, TentativaComEstrutura>();
   for (const t of tents) {
